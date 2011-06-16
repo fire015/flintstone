@@ -6,7 +6,7 @@ class Flintstone {
 	private $db = null;
 	
 	// Database data
-	public $data = array();
+	private $data = array();
 	
 	// Options
 	public $options = array('dir' => 'db/', 'ext' => '.txt', 'gzip' => false, 'cache' => true, 'swap_memory_limit' => 1048576);
@@ -544,7 +544,7 @@ function echo_memory_usage() {
 }
 
 try {
-	$db = new Flintstone(array('gzip' => true));
+	$db = new Flintstone();
 	
 	/*
 	for ($i = 1; $i <= 100; $i++) {
