@@ -62,8 +62,7 @@ Usage examples
 	}
 	
 
-Changelog
----------
+## Changelog
 
-## 17/06/2011 - 1.0
+### 17/06/2011 - 1.0
 * Initial release
