@@ -1,5 +1,29 @@
 <?php
 
+/*
+ * Flintstone - A key/value database store using flat files for PHP
+ * Copyright (c) 2011 XEWeb
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * @link http://www.xeweb.net/flintstone/
+ * @copyright 2011 XEWeb
+ * @author Jason <emailfire@gmail.com>
+ * @version 1.0
+ */
+
 class Flintstone {
 	
 	// Database name
@@ -9,10 +33,11 @@ class Flintstone {
 	private $data = array();
 	
 	// Options
-	public $options = array('dir' => 'db/', 'ext' => '.txt', 'gzip' => false, 'cache' => true, 'swap_memory_limit' => 1048576);
+	public $options = array('dir' => '', 'ext' => '.dat', 'gzip' => false, 'cache' => true, 'swap_memory_limit' => 1048576);
 	
 	/*
 	 * Flintstone constructor
+	 * @param $options an array of options
 	 */
 	public function __construct($options = array()) {
 		if (!empty($options)) $this->setOptions($options);
@@ -35,7 +60,11 @@ class Flintstone {
 	public function load($database) {
 		
 		// Check database directory
-		if (!isset($this->options['dir']) || !is_dir($this->options['dir'])) {
+		if (empty($this->options['dir'])) {
+			throw new Exception('Database directory has not been set');
+		}
+		
+		if (!is_dir($this->options['dir'])) {
 			throw new Exception($this->options['dir'] . ' is not a valid directory');
 		}
 		
@@ -51,10 +80,12 @@ class Flintstone {
 		if (!array_key_exists($this->db, $this->data)) {
 			
 			// Set database data
+			$dir = $this->options['dir'];
 			$ext = $this->options['ext'];
+			if (substr($dir, -1) !== DIRECTORY_SEPARATOR) $dir .= DIRECTORY_SEPARATOR;
 			if ($this->options['gzip'] === true && substr($ext, -3) !== ".gz") $ext .= ".gz";
-			$this->data[$this->db]['file'] = $this->options['dir'] . $this->db . $ext;
-			$this->data[$this->db]['file_tmp'] = $this->options['dir'] . $this->db . "_tmp" . $ext;
+			$this->data[$this->db]['file'] = $dir . $this->db . $ext;
+			$this->data[$this->db]['file_tmp'] = $dir . $this->db . "_tmp" . $ext;
 			$this->data[$this->db]['cache'] = array();
 			
 			// Create database
@@ -153,7 +184,7 @@ class Flintstone {
 			@fclose($fp);
 		}
 		else {
-			throw new Exception('Could not read database ' . $this->db);
+			throw new Exception('Could not open database ' . $this->db);
 		}
 		
 		return $data;
@@ -162,7 +193,7 @@ class Flintstone {
 	/*
 	 * Replace a key in the database
 	 * @param $key the key
-	 * @param $data the data to store or false to delete
+	 * @param $data the data to store, or false to delete
 	 */
 	private function replaceKey($key, $data) {
 		
@@ -289,19 +320,19 @@ class Flintstone {
 					}
 				}
 				else {
-					throw new Exception('Could not read database ' . $this->db);
+					throw new Exception('Could not open database ' . $this->db);
 				}
 			}
 		}
 		else {
-			throw new Exception('Could not read database ' . $this->db);
+			throw new Exception('Could not open database ' . $this->db);
 		}
 		
 		return true;
 	}
 	
 	/*
-	 * Set a key to store in database
+	 * Set a key to store in the database
 	 * @param $key the key
 	 * @param $data the data to store
 	 */
@@ -349,7 +380,7 @@ class Flintstone {
 			}
 		}
 		else {
-			throw new Exception('Could not read database ' . $this->db);
+			throw new Exception('Could not open database ' . $this->db);
 		}
 		
 		return true;
@@ -396,7 +427,7 @@ class Flintstone {
 			}
 		}
 		else {
-			throw new Exception('Could not read database ' . $this->db);
+			throw new Exception('Could not open database ' . $this->db);
 		}
 		
 		return true;
@@ -440,7 +471,7 @@ class Flintstone {
 	}
 	
 	/*
-	 * Check the database has been loaded and valid key length
+	 * Check the database has been loaded and valid key
 	 * @param $key the key
 	 */
 	private function isValidKey($key) {
@@ -459,6 +490,11 @@ class Flintstone {
 		
 		if ($len > 50) {
 			throw new Exception('Maximum key length is 50 characters');
+		}
+		
+		// Check valid characters in key
+		if (!preg_match("/^([A-Za-z0-9_]+)$/", $key)) {
+			throw new Exception('Invalid characters in key');
 		}
 		
 		return true;
@@ -487,7 +523,7 @@ class Flintstone {
 	}
 	
 	/*
-	 * Set a key to store in database
+	 * Set a key to store in the database
 	 * @param $key the key
 	 * @param $data the data to store
 	 */
@@ -528,45 +564,4 @@ class Flintstone {
 		return $this->flushDatabase();
 	}
 }
-
-echo "<pre>";
-$time_start = microtime(true);
-
-function echo_memory_usage() {
-	$mem_usage = memory_get_usage();
-   
-	if ($mem_usage < 1024)
-		echo $mem_usage." bytes\n";
-	elseif ($mem_usage < 1048576)
-		echo round($mem_usage/1024,2)." kilobytes\n";
-	else
-		echo round($mem_usage/1048576,2)." megabytes\n";
-}
-
-try {
-	$db = new Flintstone();
-	
-	/*
-	for ($i = 1; $i <= 100; $i++) {
-		$key = 'user' . $i;
-		$value = array('id' => $i, 'name' => 'user' . $i, 'age' => ($i * 10), 'test' => array("my\ndog", "my\npony"), 'description' => "Lorem\n\rIpsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
-		$db->load('users')->set($key, $value);
-	}
-	*/
-	
-	print_r($db->load('users')->get('user68')); echo "\n";
-	$db->load('users')->replace('user68', 'xxx');
-	print_r($db->load('users')->get('user68')); echo "\n";
-	print_r($db->data);
-	$db->load('users')->flush();
-	print_r($db->data);
-	
-	$time_end = microtime(true);
-	echo "\n\n---------------\n" . ($time_end - $time_start) . "\n";
-	echo_memory_usage();
-}
-catch (Exception $e) {
-	echo 'Exception: ' . $e->getMessage();
-}
-
 ?>
