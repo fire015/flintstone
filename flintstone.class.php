@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Flintstone - A key/value database store using flat files for PHP
  * Copyright (c) 2011 XEWeb
  * 
@@ -22,30 +22,50 @@
  * @copyright 2011 XEWeb
  * @author Jason <emailfire@gmail.com>
  * @version 1.0
+ * @package flintstone
  */
 
 class Flintstone {
 	
-	// Database name
+	/**
+	 * Database name
+	 * @access private
+	 * @var string
+	 */
 	private $db = null;
 	
-	// Database data
+	/**
+	 * Database data
+	 * @access private
+	 * @var array
+	 */
 	private $data = array();
 	
-	// Options
+	/**
+	 * Flintstone options:
+	 * 
+	 * - string		$dir				the directory to the database files
+	 * - string		$ext				the database file extension
+	 * - boolean	$gzip				use gzip to compress database
+	 * - boolean	$cache				store get() results in memory
+	 * - integer	$swap_memory_limit	write out each line to a temporary file and swap if database is larger than limit (0 to always do this)
+	 *   
+	 * @access public
+	 * @var array
+	 */
 	public $options = array('dir' => '', 'ext' => '.dat', 'gzip' => false, 'cache' => true, 'swap_memory_limit' => 1048576);
 	
-	/*
+	/**
 	 * Flintstone constructor
-	 * @param $options an array of options
+	 * @param array $options an array of options
 	 */
 	public function __construct($options = array()) {
 		if (!empty($options)) $this->setOptions($options);
 	}
 	
-	/*
+	/**
 	 * Set flintstone options
-	 * @param $options an array of options
+	 * @param array $options an array of options
 	 */
 	public function setOptions($options) {
 		foreach ($options as $key => $value) {
@@ -53,9 +73,9 @@ class Flintstone {
 		}
 	}
 	
-	/*
+	/**
 	 * Load a database
-	 * @param $database the database name
+	 * @param string $database the database name
 	 */
 	public function load($database) {
 		
@@ -114,19 +134,19 @@ class Flintstone {
 		return $this;
 	}
 	
-	/*
+	/**
 	 * Open the database file
-	 * @param $file the file path
-	 * @param $mode the file mode
+	 * @param string $file the file path
+	 * @param string $mode the file mode
 	 */
 	private function openFile($file, $mode) {
 		if ($this->options['gzip'] === true) $file = 'compress.zlib://' . $file;
 		return @fopen($file, $mode);
 	}
 
-	/*
+	/**
 	 * Get a key from the database
-	 * @param $key the key
+	 * @param string $key the key
 	 */
 	private function getKey($key) {
 		
@@ -190,10 +210,10 @@ class Flintstone {
 		return $data;
 	}
 	
-	/*
+	/**
 	 * Replace a key in the database
-	 * @param $key the key
-	 * @param $data the data to store, or false to delete
+	 * @param string $key the key
+	 * @param mixed $data the data to store, or false to delete
 	 */
 	private function replaceKey($key, $data) {
 		
@@ -331,10 +351,10 @@ class Flintstone {
 		return true;
 	}
 	
-	/*
+	/**
 	 * Set a key to store in the database
-	 * @param $key the key
-	 * @param $data the data to store
+	 * @param string $key the key
+	 * @param mixed $data the data to store
 	 */
 	private function setKey($key, $data) {
 		
@@ -386,9 +406,9 @@ class Flintstone {
 		return true;
 	}
 	
-	/*
+	/**
 	 * Delete a key from the database
-	 * @param $key the key
+	 * @param string $key the key
 	 */
 	private function deleteKey($key) {
 		
@@ -410,7 +430,7 @@ class Flintstone {
 		return false;
 	}
 	
-	/*
+	/**
 	 * Flush the database
 	 */
 	private function flushDatabase() {
@@ -433,10 +453,10 @@ class Flintstone {
 		return true;
 	}
 	
-	/*
+	/**
 	 * Preserve new lines, recursive function
-	 * @param $data the data
-	 * @param $reverse to reverse the replacement order
+	 * @param mixed $data the data
+	 * @param boolean $reverse to reverse the replacement order
 	 */
 	private function preserveLines($data, $reverse) {
 		
@@ -461,18 +481,18 @@ class Flintstone {
 		return $data;
 	}
 	
-	/*
+	/**
 	 * Mulit-byte unserialize function
-	 * @param $string the string
+	 * @param string $string the string
 	 */
 	private function unserialize($string) {
 		$string = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $string);
 		return unserialize($string);
 	}
 	
-	/*
+	/**
 	 * Check the database has been loaded and valid key
-	 * @param $key the key
+	 * @param string $key the key
 	 */
 	private function isValidKey($key) {
 		
@@ -500,9 +520,9 @@ class Flintstone {
 		return true;
 	}
 	
-	/*
+	/**
 	 * Check the data type is valid
-	 * @param $data the data
+	 * @param mixed $data the data
 	 */
 	private function isValidData($data) {
 		if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
@@ -511,9 +531,9 @@ class Flintstone {
 		return true;
 	}
 	
-	/*
+	/**
 	 * Get a key from the database
-	 * @param $key the key
+	 * @param string $key the key
 	 */
 	public function get($key) {
 		if ($this->isValidKey($key)) {
@@ -522,10 +542,10 @@ class Flintstone {
 		return false;
 	}
 	
-	/*
+	/**
 	 * Set a key to store in the database
-	 * @param $key the key
-	 * @param $data the data to store
+	 * @param string $key the key
+	 * @param mixed $data the data to store
 	 */
 	public function set($key, $data) {
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
@@ -534,10 +554,10 @@ class Flintstone {
 		return false;
 	}
 	
-	/*
+	/**
 	 * Replace a key in the database
-	 * @param $key the key
-	 * @param $data the data to store
+	 * @param string $key the key
+	 * @param mixed $data the data to store
 	 */
 	public function replace($key, $data) {
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
@@ -546,9 +566,9 @@ class Flintstone {
 		return false;
 	}
 	
-	/*
+	/**
 	 * Delete a key from the database
-	 * @param $key the key
+	 * @param string $key the key
 	 */
 	public function delete($key) {
 		if ($this->isValidKey($key)) {
@@ -557,7 +577,7 @@ class Flintstone {
 		return false;
 	}
 	
-	/*
+	/**
 	 * Flush the database
 	 */
 	public function flush() {
