@@ -11,6 +11,8 @@ Features include:
 * Gzip compression
 * Easy to use
 
+For full documentation please visit http://www.xeweb.net/flintstone/
+
 Requirements
 -------------
 
