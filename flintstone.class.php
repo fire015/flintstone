@@ -102,6 +102,7 @@ class Flintstone {
 			// Set database data
 			$dir = $this->options['dir'];
 			$ext = $this->options['ext'];
+			if (substr($ext, 0, 1) !== ".") $ext = "." . $ext;
 			if (substr($dir, -1) !== DIRECTORY_SEPARATOR) $dir .= DIRECTORY_SEPARATOR;
 			if ($this->options['gzip'] === true && substr($ext, -3) !== ".gz") $ext .= ".gz";
 			$this->data[$this->db]['file'] = $dir . $this->db . $ext;
