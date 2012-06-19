@@ -454,45 +454,6 @@ class Flintstone {
 		return true;
 	}
 	
-	
-  /**
-	 * Get all keys from the database
-	 */
-	private function getAllKeys() {
-
-		$data = false;
-
-		// Open file
-		if (($fp = $this->openFile($this->data[$this->db]['file'], "rb")) !== false) {
-
-			// Lock file
-			@flock($fp, LOCK_SH);
-
-			// Loop through each line of file
-			while (($line = fgets($fp)) !== false) {
-
-				// Remove new line character from end
-				$line = rtrim($line);
-
-				// Split up seperator
-				$pieces = explode("=", $line);
-
-        $keys[] = $pieces[0];
-
-			}
-
-			// Unlock and close file
-			@flock($fp, LOCK_UN);
-			@fclose($fp);
-		}
-		else {
-			throw new Exception('Could not open database ' . $this->db);
-		}
-
-		return $keys;
-	}	
-	
-	
 	/**
 	 * Preserve new lines, recursive function
 	 * @param mixed $data the data
@@ -623,13 +584,5 @@ class Flintstone {
 	public function flush() {
 		return $this->flushDatabase();
 	}
-	
-  /**
-	 * Get all keys from the database
-	 * @return array
-	 */
-	public function getKeys() {
-			return $this->getAllKeys();
-	}	
 }
 ?>
