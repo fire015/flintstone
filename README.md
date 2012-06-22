@@ -52,6 +52,14 @@ Usage examples
 			echo 'Sorry, the website is offline<br />';
 			echo 'We will be back in ' . $db->load('settings')->get('site_back');
 		}
+			
+		// Retrieve all key names
+		$keys = $db->load('users')->getKeys(); // returns array('bob', 'joe', ...)
+		foreach($keys as $username){
+			$user = $db->load('users')->get($username);
+			echo $username.', your email is ' . $user['email'];
+			echo $username.', your password is ' . $user['password'];
+		}
 		
 		// Delete a key
 		$db->load('users')->delete('joe');
