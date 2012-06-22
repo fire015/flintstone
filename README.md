@@ -74,5 +74,8 @@ Usage examples
 
 ## Changelog
 
+### 22/06/2012 - 1.1
+* Added new method getKeys() to return an array of keys in the database (thanks to sinky)
+
 ### 17/06/2011 - 1.0
 * Initial release

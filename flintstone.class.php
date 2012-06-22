@@ -21,7 +21,7 @@
  * @link http://www.xeweb.net/flintstone/
  * @copyright 2011 XEWeb
  * @author Jason <emailfire@gmail.com>
- * @version 1.0
+ * @version 1.1
  * @package flintstone
  */
 
@@ -58,6 +58,7 @@ class Flintstone {
 	/**
 	 * Flintstone constructor
 	 * @param array $options an array of options
+	 * @return void
 	 */
 	public function __construct($options = array()) {
 		if (!empty($options)) $this->setOptions($options);
@@ -66,6 +67,7 @@ class Flintstone {
 	/**
 	 * Set flintstone options
 	 * @param array $options an array of options
+	 * @return void
 	 */
 	public function setOptions($options) {
 		foreach ($options as $key => $value) {
@@ -76,6 +78,7 @@ class Flintstone {
 	/**
 	 * Load a database
 	 * @param string $database the database name
+	 * @return object the Flintstone class
 	 */
 	public function load($database) {
 		
@@ -139,6 +142,7 @@ class Flintstone {
 	 * Open the database file
 	 * @param string $file the file path
 	 * @param string $mode the file mode
+	 * @return object file pointer
 	 */
 	private function openFile($file, $mode) {
 		if ($this->options['gzip'] === true) $file = 'compress.zlib://' . $file;
@@ -148,6 +152,7 @@ class Flintstone {
 	/**
 	 * Get a key from the database
 	 * @param string $key the key
+	 * @return mixed the data
 	 */
 	private function getKey($key) {
 		
@@ -215,6 +220,7 @@ class Flintstone {
 	 * Replace a key in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store, or false to delete
+	 * @return boolean successful replace
 	 */
 	private function replaceKey($key, $data) {
 		
@@ -356,6 +362,7 @@ class Flintstone {
 	 * Set a key to store in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store
+	 * @return boolean successful set
 	 */
 	private function setKey($key, $data) {
 		
@@ -410,6 +417,7 @@ class Flintstone {
 	/**
 	 * Delete a key from the database
 	 * @param string $key the key
+	 * @return boolean successful delete
 	 */
 	private function deleteKey($key) {
 		
@@ -433,6 +441,7 @@ class Flintstone {
 	
 	/**
 	 * Flush the database
+	 * @return boolean successful flush
 	 */
 	private function flushDatabase() {
 		
@@ -453,31 +462,27 @@ class Flintstone {
 		
 		return true;
 	}
-	
-  /**
+
+	/**
 	 * Get all keys from the database
+	 * @return array of keys
 	 */
 	private function getAllKeys() {
-
-		$data = false;
+		
+		$keys = array();
 
 		// Open file
 		if (($fp = $this->openFile($this->data[$this->db]['file'], "rb")) !== false) {
-
+			
 			// Lock file
 			@flock($fp, LOCK_SH);
-
+			
 			// Loop through each line of file
 			while (($line = fgets($fp)) !== false) {
-
-				// Remove new line character from end
-				$line = rtrim($line);
-
+				
 				// Split up seperator
 				$pieces = explode("=", $line);
-
-        $keys[] = $pieces[0];
-
+				$keys[] = $pieces[0];
 			}
 
 			// Unlock and close file
@@ -495,6 +500,7 @@ class Flintstone {
 	 * Preserve new lines, recursive function
 	 * @param mixed $data the data
 	 * @param boolean $reverse to reverse the replacement order
+	 * @return mixed the data
 	 */
 	private function preserveLines($data, $reverse) {
 		
@@ -522,6 +528,7 @@ class Flintstone {
 	/**
 	 * Mulit-byte unserialize function
 	 * @param string $string the string
+	 * @return array unserialized string
 	 */
 	private function unserialize($string) {
 		$string = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $string);
@@ -531,6 +538,7 @@ class Flintstone {
 	/**
 	 * Check the database has been loaded and valid key
 	 * @param string $key the key
+	 * @return boolean
 	 */
 	private function isValidKey($key) {
 		
@@ -561,6 +569,7 @@ class Flintstone {
 	/**
 	 * Check the data type is valid
 	 * @param mixed $data the data
+	 * @return boolean
 	 */
 	private function isValidData($data) {
 		if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
@@ -572,6 +581,7 @@ class Flintstone {
 	/**
 	 * Get a key from the database
 	 * @param string $key the key
+	 * @return mixed the data
 	 */
 	public function get($key) {
 		if ($this->isValidKey($key)) {
@@ -584,6 +594,7 @@ class Flintstone {
 	 * Set a key to store in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store
+	 * @return boolean successful set
 	 */
 	public function set($key, $data) {
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
@@ -596,6 +607,7 @@ class Flintstone {
 	 * Replace a key in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store
+	 * @return boolean successful replace
 	 */
 	public function replace($key, $data) {
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
@@ -607,6 +619,7 @@ class Flintstone {
 	/**
 	 * Delete a key from the database
 	 * @param string $key the key
+	 * @return boolean successful delete
 	 */
 	public function delete($key) {
 		if ($this->isValidKey($key)) {
@@ -617,17 +630,18 @@ class Flintstone {
 	
 	/**
 	 * Flush the database
+	 * @return boolean successful flush
 	 */
 	public function flush() {
 		return $this->flushDatabase();
 	}
 	
-  /**
+	/**
 	 * Get all keys from the database
-	 * @return array
+	 * @return array list of keys
 	 */
 	public function getKeys() {
-			return $this->getAllKeys();
+		return $this->getAllKeys();
 	}	
 }
 ?>
