@@ -21,7 +21,7 @@
  * @link http://www.xeweb.net/flintstone/
  * @copyright 2011 XEWeb
  * @author Jason <emailfire@gmail.com>
- * @version 1.1
+ * @version 1.2
  * @package flintstone
  */
 
@@ -191,7 +191,7 @@ class Flintstone {
 					}
 					
 					// Unserialize data
-					$data = $this->unserialize($data);
+					$data = unserialize($data);
 					
 					// Preserve new lines
 					$data = $this->preserveLines($data, true);
@@ -523,16 +523,6 @@ class Flintstone {
 		}
 
 		return $data;
-	}
-	
-	/**
-	 * Mulit-byte unserialize function
-	 * @param string $string the string
-	 * @return array unserialized string
-	 */
-	private function unserialize($string) {
-		$string = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $string);
-		return unserialize($string);
 	}
 	
 	/**
