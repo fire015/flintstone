@@ -137,6 +137,36 @@ class Flintstone {
 		
 		return $this;
 	}
+
+	/**
+	 * Check if a database exists
+	 * @return bool true if exists
+	 */
+	public function exists($database) {
+		// Check database directory
+		if (empty($this->options['dir'])) {
+			throw new Exception('Database directory has not been set');
+		}
+		
+		if (!is_dir($this->options['dir'])) {
+			throw new Exception($this->options['dir'] . ' is not a valid directory');
+		}
+		
+		// Check valid characters in database name
+		if (!preg_match("/^([A-Za-z0-9_]+)$/", $database)) {
+			throw new Exception('Invalid characters in database name');
+		}
+
+		$ext = $this->options['ext'];
+		if (substr($ext, 0, 1) !== ".") $ext = "." . $ext;
+		$file = rtrim($this->options['dir'], '/\\') . '/' . $database . $ext;
+
+		if (!file_exists($file)) {
+			return false;
+		}
+
+		return true;
+	}
 	
 	/**
 	 * Open the database file
