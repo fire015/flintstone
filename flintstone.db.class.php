@@ -48,8 +48,8 @@ class Flintstone {
 	 * @access public
 	 * @var array
 	 */
-	public $options = array('dir' => '', 'ext' => '.dat', 'gzip' => false, 'cache' => true, 'swap_memory_limit' => 1048576);
-	
+	private $options;
+
 
 	/**
 	 * Flintstone constructor
@@ -57,6 +57,14 @@ class Flintstone {
 	 * @return void
 	 */
 	public function __construct($options = array()) {
+		$this->options = array(
+			'dir' => '',
+			'ext' => '.dat',
+			'gzip' => false,
+			'cache' => true,
+			'swap_memory_limit' => 1048576
+		);
+
 		if (!empty($options)) $this->setOptions($options);
 		$this->_tables = array();
 	}
@@ -102,6 +110,15 @@ class Flintstone {
 	}
 
 	/**
+	 * Returns the options.
+	 *
+	 * @return array $options the options
+	 */
+	public function getOptions() {
+		return $this->options;
+	}
+
+	/**
 	 * Checks if the database is empty.
 	 * The database is empty if there are no tables.
 	 *
@@ -112,7 +129,8 @@ class Flintstone {
 	}
 
 	/**
-	 * Loads a table
+	 * Loads the table.
+	 *
 	 * @param string $table the table name
 	 * @return FlintStoneTbl the table
 	 */
@@ -132,9 +150,6 @@ class Flintstone {
 			throw new Exception('Invalid characters in table name');
 		}
 
-		// Create new table object
-		$tbl = new FlintStoneTbl($table);
-
 		// Check table data
 		if (!array_key_exists($table, $this->tables)) {
 
@@ -145,32 +160,19 @@ class Flintstone {
 			if (substr($dir, -1) !== DIRECTORY_SEPARATOR) $dir .= DIRECTORY_SEPARATOR;
 			if ($this->options['gzip'] === true && substr($ext, -3) !== ".gz") $ext .= ".gz";
 
-			$tbl->setFile($dir . $this->db . $ext);
-			$tbl->setTmpFile($dir . $this->db . "_tmp" . $ext);
-			$tbl->setCache(array());
+			// Create new table object
+			$tbl = new FlintStoneTbl(
+				$table,
+				$dir . $this->db . $ext,
+				$dir . $this->db . "_tmp" . $ext,
+				array(
+					$this->options['gzip'],
+					$this->options['cache'],
+					$this->options['swap_memory_limit']
+				)
+			);
 
-			// Create table
-			if (!file_exists($tbl->getFile())) {
-				if (($fp = $this->openTable($tbl->getFile(), "wb")) !== false) {
-					@fclose($fp);
-					@chmod($tbl->getFile(), 0777);
-					clearstatcache();
-				}
-				else {
-					throw new Exception('Could not create table ' . $table);
-				}
-			}
-
-			// Check file is readable
-			if (!is_readable($tbl->getFile())) {
-				throw new Exception('Could not read table ' . $table);
-			}
-
-			// Check file is writable
-			if (!is_writable($tbl->getFile())) {
-				throw new Exception('Could not write to table ' . $table);
-			}
-
+			// Check if file was loaded
 			$this->addTable($tbl);
 		}
 
@@ -178,22 +180,11 @@ class Flintstone {
 	}
 
 	/**
-	 * Open the table file
-	 * @param string $file the file path
-	 * @param string $mode the file mode
-	 * @return object file pointer
-	 */
-	private function openTable($file, $mode) {
-		if ($this->options['gzip'] === true) $file = 'compress.zlib://' . $file;
-		return @fopen($file, $mode);
-	}
-
-	/**
 	 * Set flintstone options
 	 * @param array $options an array of options
 	 * @return void
 	 */
-	public function setOptions($options) {
+	private function setOptions($options) {
 		foreach ($options as $key => $value) {
 			$this->options[$key] = $value;
 		}
