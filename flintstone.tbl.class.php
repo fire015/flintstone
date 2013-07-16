@@ -390,6 +390,33 @@ class FlintstoneTbl {
 			throw new Exception('Could not write to table ' . $this->name);
 		}
 
+		// Open file
+		if (($fp = $this->openFile($this->file, "rb")) !== false) {
+
+			// Array for keys
+			$keysInFile = array();
+
+			// Lock file
+			@flock($fp, LOCK_SH);
+
+			// Loop through each line of file
+			while (($line = fgets($fp)) !== false) {
+
+				// Split up seperator
+				$pieces = explode("=", $line);
+				array_push($keysInFile, $pieces[0]);
+			}
+
+			// Unlock and close file
+			@flock($fp, LOCK_UN);
+			@fclose($fp);
+
+			// Write keys from file to local var
+			$this->keys = $keysInFile;
+		} else {
+			throw new Exception('Could not open table ' . $this->name);
+		}
+
 		return $this->loaded = true;
 	}
 
