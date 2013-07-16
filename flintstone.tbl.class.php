@@ -176,7 +176,7 @@ class FlintstoneTbl {
 			@fclose($fp);
 
 			// Empty cache
-			if ($this->options['cache'] === true) {
+			if ($this->cacheEnabled()) {
 				$this->cache = array();
 			}
 
@@ -226,7 +226,7 @@ class FlintstoneTbl {
 			$data = false;
 
 			// Look in cache for key
-			if ($this->options['cache'] && array_key_exists($key, $this->cache)) {
+			if ($this->cacheEnabled() && array_key_exists($key, $this->cache)) {
 				return $this->cache[$key];
 			}
 
@@ -264,7 +264,7 @@ class FlintstoneTbl {
 						$data = $this->preserveLines($data, true);
 
 						// Save to cache
-						if ($this->options['cache']) {
+						if ($this->cacheEnabled()) {
 							$this->cache[$key] = $data;
 						}
 
@@ -500,7 +500,7 @@ class FlintstoneTbl {
 
 			if ($data !== false) {
 				// Create a copy of data to push into cache
-				if ($this->options['cache']) {
+				if ($this->cacheEnabled()) {
 					$orig_data = $data;
 				}
 
@@ -539,7 +539,7 @@ class FlintstoneTbl {
 						$line = $key . "=" . $data . "\n";
 
 						// Save to cache
-						if ($this->options['cache']) {
+						if ($this->cacheEnabled()) {
 							$this->cache[$key] = $orig_data;
 						}
 					}
@@ -674,7 +674,7 @@ class FlintstoneTbl {
 			}
 
 			// Save to cache
-			if ($this->options['cache']) {
+			if ($this->cacheEnabled()) {
 				$this->cache[$key] = $orig_data;
 			}
 
