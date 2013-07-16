@@ -373,7 +373,7 @@ class FlintstoneTbl {
 		if (!file_exists($this->file)) {
 			if (($fp = $this->openFile($this->file, "wb")) !== false) {
 				@fclose($fp);
-				@chmod($this->file(), 0777);
+				@chmod($this->file, 0777);
 				clearstatcache();
 			} else {
 				throw new Exception('Could not create table ' . $this->name);
