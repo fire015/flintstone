@@ -34,12 +34,12 @@ Usage examples
 
 	try {
 	
-		// Load flintstone
-		$db = new Flintstone(array('dir' => '/path/to/database/dir/'));
+		// Set options
+		$options = array('dir' => '/path/to/database/dir/');
 		
 		// Load the databases
-		$users = $db->load('users');
-		$settings = $db->load('settings');
+		$users = Flintstone::load('users', $options);
+		$settings = Flintstone::load('settings', $options);
 		
 		// Set keys
 		$users->set('bob', array('email' => 'bob@site.com', 'password' => '123456'));
@@ -72,12 +72,16 @@ Usage examples
 		// Flush the database
 		$users->flush();
 	}
-	catch (Exception $e) {
-		echo 'Exception: ' . $e->getMessage();
+	catch (FlintstoneException $e) {
+		echo 'An error occured: ' . $e->getMessage();
 	}
 	
 
 ## Changelog
+
+### 16/07/2013 - 1.3
+* Changed the load method to static so that multiple instances can be loaded without conflict (use Flintstone::load now instead of $db->load)
+* Exception thrown is now FlintstoneException
 
 ### 23/01/2013 - 1.2
 * Removed the multibyte unserialize method as it seems to work without

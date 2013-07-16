@@ -2,7 +2,7 @@
 
 /**
  * Flintstone - A key/value database store using flat files for PHP
- * Copyright (c) 2011 XEWeb
+ * Copyright (c) 2013 XEWeb
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,13 +19,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * @link http://www.xeweb.net/flintstone/
- * @copyright 2011 XEWeb
+ * @copyright 2013 XEWeb
  * @author Jason <emailfire@gmail.com>
- * @version 1.2
+ * @version 1.3
  * @package flintstone
  */
 
 class Flintstone {
+	
+	/**
+	 * Static instance
+	 * @access private
+	 * @var array
+	 */
+	private static $instance = array();
+	
+	/**
+	 * Load a database
+	 * @param string $database the database name
+	 * @param array $options an array of options
+	 * @return object the FlintstoneDB class
+	 */
+	public static function load($database, $options = array()) {
+		if (!array_key_exists($database, self::$instance)) {
+			self::$instance[$database] = new FlintstoneDB($database, $options);
+		}
+		
+		return self::$instance[$database];
+	}
+}
+
+class FlintstoneDB {
 	
 	/**
 	 * Database name
@@ -57,11 +81,24 @@ class Flintstone {
 	
 	/**
 	 * Flintstone constructor
+	 * @param string $database the database name
 	 * @param array $options an array of options
 	 * @return void
 	 */
-	public function __construct($options = array()) {
-		if (!empty($options)) $this->setOptions($options);
+	public function __construct($database, $options) {
+		
+		// Check valid characters in database name
+		if (!preg_match("/^([A-Za-z0-9_]+)$/", $database)) {
+			throw new FlintstoneException('Invalid characters in database name');
+		}
+		
+		// Set current database
+		$this->db = $database;
+		
+		// Set options
+		if (!empty($options)) {
+			$this->setOptions($options);
+		}
 	}
 	
 	/**
@@ -76,66 +113,49 @@ class Flintstone {
 	}
 	
 	/**
-	 * Load a database
-	 * @param string $database the database name
-	 * @return object the Flintstone class
+	 * Setup the database and perform pre-flight checks
+	 * @return void
 	 */
-	public function load($database) {
+	public function setupDatabase() {
+		if (empty($this->data)) {
 		
-		// Check database directory
-		if (empty($this->options['dir'])) {
-			throw new Exception('Database directory has not been set');
-		}
-		
-		if (!is_dir($this->options['dir'])) {
-			throw new Exception($this->options['dir'] . ' is not a valid directory');
-		}
-		
-		// Check valid characters in database name
-		if (!preg_match("/^([A-Za-z0-9_]+)$/", $database)) {
-			throw new Exception('Invalid characters in database name');
-		}
-		
-		// Set current database
-		$this->db = $database;
-		
-		// Check database data
-		if (!array_key_exists($this->db, $this->data)) {
+			// Check database directory
+			$dir = rtrim($this->options['dir'], '/\\') . DIRECTORY_SEPARATOR;
 			
-			// Set database data
-			$dir = $this->options['dir'];
+			if (!is_dir($dir)) {
+				throw new FlintstoneException($dir . ' is not a valid directory');
+			}
+			
+			// Set data
 			$ext = $this->options['ext'];
 			if (substr($ext, 0, 1) !== ".") $ext = "." . $ext;
-			if (substr($dir, -1) !== DIRECTORY_SEPARATOR) $dir .= DIRECTORY_SEPARATOR;
 			if ($this->options['gzip'] === true && substr($ext, -3) !== ".gz") $ext .= ".gz";
-			$this->data[$this->db]['file'] = $dir . $this->db . $ext;
-			$this->data[$this->db]['file_tmp'] = $dir . $this->db . "_tmp" . $ext;
-			$this->data[$this->db]['cache'] = array();
+			$this->data['file'] = $dir . $this->db . $ext;
+			$this->data['file_tmp'] = $dir . $this->db . "_tmp" . $ext;
+			$this->data['cache'] = array();
 			
 			// Create database
-			if (!file_exists($this->data[$this->db]['file'])) {
-				if (($fp = $this->openFile($this->data[$this->db]['file'], "wb")) !== false) {
+			if (!file_exists($this->data['file'])) {
+				if (($fp = $this->openFile($this->data['file'], "wb")) !== false) {
 					@fclose($fp);
-					@chmod($this->data[$this->db]['file'], 0777);
+					@chmod($this->data['file'], 0777);
 					clearstatcache();
 				}
 				else {
-					throw new Exception('Could not create database ' . $this->db);
+					throw new FlintstoneException('Could not create database ' . $this->db);
 				}
 			}
 			
 			// Check file is readable
-			if (!is_readable($this->data[$this->db]['file'])) {
-				throw new Exception('Could not read database ' . $this->db);
+			if (!is_readable($this->data['file'])) {
+				throw new FlintstoneException('Could not read database ' . $this->db);
 			}
 			
 			// Check file is writable
-			if (!is_writable($this->data[$this->db]['file'])) {
-				throw new Exception('Could not write to database ' . $this->db);
+			if (!is_writable($this->data['file'])) {
+				throw new FlintstoneException('Could not write to database ' . $this->db);
 			}
 		}
-		
-		return $this;
 	}
 	
 	/**
@@ -159,12 +179,12 @@ class Flintstone {
 		$data = false;
 		
 		// Look in cache for key
-		if ($this->options['cache'] === true && array_key_exists($key, $this->data[$this->db]['cache'])) {
-			return $this->data[$this->db]['cache'][$key];
+		if ($this->options['cache'] === true && array_key_exists($key, $this->data['cache'])) {
+			return $this->data['cache'][$key];
 		}
 		
 		// Open file
-		if (($fp = $this->openFile($this->data[$this->db]['file'], "rb")) !== false) {
+		if (($fp = $this->openFile($this->data['file'], "rb")) !== false) {
 			
 			// Lock file
 			@flock($fp, LOCK_SH);
@@ -198,7 +218,7 @@ class Flintstone {
 					
 					// Save to cache
 					if ($this->options['cache'] === true) {
-						$this->data[$this->db]['cache'][$key] = $data;
+						$this->data['cache'][$key] = $data;
 					}
 					
 					break;
@@ -210,7 +230,7 @@ class Flintstone {
 			@fclose($fp);
 		}
 		else {
-			throw new Exception('Could not open database ' . $this->db);
+			throw new FlintstoneException('Could not open database ' . $this->db);
 		}
 		
 		return $data;
@@ -228,7 +248,7 @@ class Flintstone {
 		$swap = true;
 		if ($this->options['swap_memory_limit'] > 0) {
 			clearstatcache();
-			if (filesize($this->data[$this->db]['file']) <= $this->options['swap_memory_limit']) {
+			if (filesize($this->data['file']) <= $this->options['swap_memory_limit']) {
 				$swap = false;
 				$contents = "";
 			}
@@ -250,16 +270,16 @@ class Flintstone {
 		
 		// Open tmp file
 		if ($swap) {
-			if (($tp = $this->openFile($this->data[$this->db]['file_tmp'], "ab")) !== false) {
+			if (($tp = $this->openFile($this->data['file_tmp'], "ab")) !== false) {
 				@flock($tp, LOCK_EX);
 			}
 			else {
-				throw new Exception('Could not create temporary database for ' . $this->db);
+				throw new FlintstoneException('Could not create temporary database for ' . $this->db);
 			}
 		}
 		
 		// Open file
-		if (($fp = $this->openFile($this->data[$this->db]['file'], "rb")) !== false) {
+		if (($fp = $this->openFile($this->data['file'], "rb")) !== false) {
 			
 			// Lock file
 			@flock($fp, LOCK_SH);
@@ -281,7 +301,7 @@ class Flintstone {
 					
 					// Save to cache
 					if ($this->options['cache'] === true) {
-						$this->data[$this->db]['cache'][$key] = $orig_data;
+						$this->data['cache'][$key] = $orig_data;
 					}
 				}
 				
@@ -291,7 +311,7 @@ class Flintstone {
 					$fwrite = @fwrite($tp, $line);
 	
 					if ($fwrite === false) {
-						throw new Exception('Could not write to temporary database ' . $this->db);
+						throw new FlintstoneException('Could not write to temporary database ' . $this->db);
 					}
 				}
 				else {
@@ -312,22 +332,22 @@ class Flintstone {
 				@fclose($tp);
 				
 				// Remove file
-				if (!@unlink($this->data[$this->db]['file'])) {
-					throw new Exception('Could not remove old database ' . $this->db);
+				if (!@unlink($this->data['file'])) {
+					throw new FlintstoneException('Could not remove old database ' . $this->db);
 				}
 				
 				// Rename tmp file
-				if (!@rename($this->data[$this->db]['file_tmp'], $this->data[$this->db]['file'])) {
-					throw new Exception('Could not rename temporary database ' . $this->db);
+				if (!@rename($this->data['file_tmp'], $this->data['file'])) {
+					throw new FlintstoneException('Could not rename temporary database ' . $this->db);
 				}
 				
 				// Set permissions
-				@chmod($this->data[$this->db]['file'], 0777);
+				@chmod($this->data['file'], 0777);
 			}
 			else {
 				
 				// Open file
-				if (($fp = $this->openFile($this->data[$this->db]['file'], "wb")) !== false) {
+				if (($fp = $this->openFile($this->data['file'], "wb")) !== false) {
 					
 					// Lock file
 					@flock($fp, LOCK_EX);
@@ -343,16 +363,16 @@ class Flintstone {
 					unset($contents);
 					
 					if ($fwrite === false) {
-						throw new Exception('Could not write to database ' . $this->db);
+						throw new FlintstoneException('Could not write to database ' . $this->db);
 					}
 				}
 				else {
-					throw new Exception('Could not open database ' . $this->db);
+					throw new FlintstoneException('Could not open database ' . $this->db);
 				}
 			}
 		}
 		else {
-			throw new Exception('Could not open database ' . $this->db);
+			throw new FlintstoneException('Could not open database ' . $this->db);
 		}
 		
 		return true;
@@ -383,7 +403,7 @@ class Flintstone {
 		$data = serialize($data);
 		
 		// Open file
-		if (($fp = $this->openFile($this->data[$this->db]['file'], "ab")) !== false) {
+		if (($fp = $this->openFile($this->data['file'], "ab")) !== false) {
 			
 			// Lock file
 			@flock($fp, LOCK_EX);
@@ -399,16 +419,16 @@ class Flintstone {
 			@fclose($fp);
 			
 			if ($fwrite === false) {
-				throw new Exception('Could not write to database ' . $this->db);
+				throw new FlintstoneException('Could not write to database ' . $this->db);
 			}
 					
 			// Save to cache
 			if ($this->options['cache'] === true) {
-				$this->data[$this->db]['cache'][$key] = $orig_data;
+				$this->data['cache'][$key] = $orig_data;
 			}
 		}
 		else {
-			throw new Exception('Could not open database ' . $this->db);
+			throw new FlintstoneException('Could not open database ' . $this->db);
 		}
 		
 		return true;
@@ -428,8 +448,8 @@ class Flintstone {
 			if ($this->replaceKey($key, false)) {
 				
 				// Remove from cache
-				if ($this->options['cache'] === true && array_key_exists($key, $this->data[$this->db]['cache'])) {
-					unset($this->data[$this->db]['cache'][$key]);
+				if ($this->options['cache'] === true && array_key_exists($key, $this->data['cache'])) {
+					unset($this->data['cache'][$key]);
 				}
 				
 				return true;
@@ -446,18 +466,18 @@ class Flintstone {
 	private function flushDatabase() {
 		
 		// Open file to truncate (w mode)
-		if (($fp = $this->openFile($this->data[$this->db]['file'], "wb")) !== false) {
+		if (($fp = $this->openFile($this->data['file'], "wb")) !== false) {
 			
 			// Close file
 			@fclose($fp);
 		
 			// Empty cache
 			if ($this->options['cache'] === true) {
-				$this->data[$this->db]['cache'] = array();
+				$this->data['cache'] = array();
 			}
 		}
 		else {
-			throw new Exception('Could not open database ' . $this->db);
+			throw new FlintstoneException('Could not open database ' . $this->db);
 		}
 		
 		return true;
@@ -472,7 +492,7 @@ class Flintstone {
 		$keys = array();
 
 		// Open file
-		if (($fp = $this->openFile($this->data[$this->db]['file'], "rb")) !== false) {
+		if (($fp = $this->openFile($this->data['file'], "rb")) !== false) {
 			
 			// Lock file
 			@flock($fp, LOCK_SH);
@@ -490,7 +510,7 @@ class Flintstone {
 			@fclose($fp);
 		}
 		else {
-			throw new Exception('Could not open database ' . $this->db);
+			throw new FlintstoneException('Could not open database ' . $this->db);
 		}
 
 		return $keys;
@@ -531,26 +551,21 @@ class Flintstone {
 	 * @return boolean
 	 */
 	private function isValidKey($key) {
-		
-		// Check database loaded
-		if ($this->db == null) {
-			throw new Exception('Database has not been loaded');
-		}
-		
+
 		// Check key length
 		$len = strlen($key);
 		
 		if ($len < 1) {
-			throw new Exception('No key has been set');
+			throw new FlintstoneException('No key has been set');
 		}
 		
 		if ($len > 50) {
-			throw new Exception('Maximum key length is 50 characters');
+			throw new FlintstoneException('Maximum key length is 50 characters');
 		}
 		
 		// Check valid characters in key
 		if (!preg_match("/^([A-Za-z0-9_]+)$/", $key)) {
-			throw new Exception('Invalid characters in key');
+			throw new FlintstoneException('Invalid characters in key');
 		}
 		
 		return true;
@@ -563,7 +578,7 @@ class Flintstone {
 	 */
 	private function isValidData($data) {
 		if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
-			throw new Exception('Invalid data type');
+			throw new FlintstoneException('Invalid data type');
 		}
 		return true;
 	}
@@ -574,9 +589,12 @@ class Flintstone {
 	 * @return mixed the data
 	 */
 	public function get($key) {
+		$this->setupDatabase();
+		
 		if ($this->isValidKey($key)) {
 			return $this->getKey($key);
 		}
+		
 		return false;
 	}
 	
@@ -587,9 +605,12 @@ class Flintstone {
 	 * @return boolean successful set
 	 */
 	public function set($key, $data) {
+		$this->setupDatabase();
+		
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
 			return $this->setKey($key, $data);
 		}
+		
 		return false;
 	}
 	
@@ -600,9 +621,12 @@ class Flintstone {
 	 * @return boolean successful replace
 	 */
 	public function replace($key, $data) {
+		$this->setupDatabase();
+		
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
 			return $this->replaceKey($key, $data);
 		}
+		
 		return false;
 	}
 	
@@ -612,9 +636,12 @@ class Flintstone {
 	 * @return boolean successful delete
 	 */
 	public function delete($key) {
+		$this->setupDatabase();
+		
 		if ($this->isValidKey($key)) {
 			return $this->deleteKey($key);
 		}
+		
 		return false;
 	}
 	
@@ -623,6 +650,7 @@ class Flintstone {
 	 * @return boolean successful flush
 	 */
 	public function flush() {
+		$this->setupDatabase();
 		return $this->flushDatabase();
 	}
 	
@@ -631,7 +659,13 @@ class Flintstone {
 	 * @return array list of keys
 	 */
 	public function getKeys() {
+		$this->setupDatabase();
 		return $this->getAllKeys();
-	}	
+	}
 }
+
+/**
+ * Flintstone exception
+ */
+class FlintstoneException extends Exception { }
 ?>
