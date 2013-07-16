@@ -177,7 +177,7 @@ class FlintstoneTbl {
 
 			// Empty cache
 			if ($this->options['cache'] === true) {
-				$this->['cache'] = array();
+				$this->cache = array();
 			}
 
 			// Empty keys
@@ -370,8 +370,8 @@ class FlintstoneTbl {
 	 */
 	private function load() {
 		// Create table
-		if (!file_exists($this->file())) {
-			if (($fp = $this->openFile($this->file(), "wb")) !== false) {
+		if (!file_exists($this->file)) {
+			if (($fp = $this->openFile($this->file, "wb")) !== false) {
 				@fclose($fp);
 				@chmod($this->file(), 0777);
 				clearstatcache();
@@ -381,12 +381,12 @@ class FlintstoneTbl {
 		}
 
 		// Check file is readable
-		if (!is_readable($this->getFile())) {
+		if (!is_readable($this->file)) {
 			throw new Exception('Could not read table ' . $this->name);
 		}
 
 		// Check file is writable
-		if (!is_writable($this->getFile())) {
+		if (!is_writable($this->file)) {
 			throw new Exception('Could not write to table ' . $this->name);
 		}
 
@@ -395,7 +395,7 @@ class FlintstoneTbl {
 
 	/**
 	 * Opens the table file.
-
+     *
 	 * @param string $file the file path
 	 * @param string $mode the file mode
 	 * @return object file pointer
@@ -604,7 +604,7 @@ class FlintstoneTbl {
 
 	/**
 	 * Sets the key to store in the table.
-
+     *
 	 * @param string $key the key
 	 * @param mixed $data the data to store
 	 * @return boolean successful set
@@ -650,6 +650,9 @@ class FlintstoneTbl {
 			if ($this->options['cache']) {
 				$this->cache[$key] = $orig_data;
 			}
+
+			// Save to keys
+			array_push($this->keys, $key);
 		}
 		else {
 			throw new Exception('Could not open table ' . $this->name);
@@ -660,7 +663,7 @@ class FlintstoneTbl {
 
 	/**
 	 * Set flintstone options.
-
+     *
 	 * @param array $options an array of options
 	 * @return void
 	 */

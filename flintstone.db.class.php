@@ -66,7 +66,7 @@ class Flintstone {
 		);
 
 		if (!empty($options)) $this->setOptions($options);
-		$this->_tables = array();
+		$this->tables = array();
 	}
 
 	/**
@@ -163,8 +163,8 @@ class Flintstone {
 			// Create new table object
 			$tbl = new FlintStoneTbl(
 				$table,
-				$dir . $this->db . $ext,
-				$dir . $this->db . "_tmp" . $ext,
+				$dir . $table . $ext,
+				$dir . $table . "_tmp" . $ext,
 				array(
 					$this->options['gzip'],
 					$this->options['cache'],
