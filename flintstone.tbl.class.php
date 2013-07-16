@@ -340,7 +340,7 @@ class FlintstoneTbl {
 	 */
 	private function isValidKey($key) {
 		// Check database loaded
-		if ($this->file == null) {
+		if (!$this->isLoaded()) {
 			throw new Exception('Table has not been loaded');
 		}
 
