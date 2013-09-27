@@ -1,11 +1,11 @@
 <?php
 
-namespace Flintsone\Exception;
+namespace Flintstone\Exception;
 
 /**
  * Class FlintstoneException
  *
- * @package Flintsone\Exception
+ * @package Flintstone\Exception
  */
 class FlintstoneException extends \Exception
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Flintsone;
+namespace Flintstone;
 
 /**
  * Class Flintstone
  *
- * @package Flintsone
+ * @package Flintstone
  */
 class Flintstone {
 

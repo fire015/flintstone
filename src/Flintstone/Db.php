@@ -1,13 +1,13 @@
 <?php
 
-namespace Flintsone;
+namespace Flintstone;
 
-use Flintsone\Exception\FlintstoneException;
+use Flintstone\Exception\FlintstoneException;
 
 /**
  * Class Db
  *
- * @package Flintsone
+ * @package Flintstone
  */
 class Db
 {
@@ -47,9 +47,8 @@ class Db
      *
      * @throws FlintstoneException
      */
-    public function __construct($database, $options)
+    public function __construct($database, array $options = null)
     {
-
         // Check valid characters in database name
         if (!preg_match("/^([A-Za-z0-9_]+)$/", $database)) {
             throw new FlintstoneException('Invalid characters in database name');
@@ -588,7 +587,7 @@ class Db
         if ($reverse) {
             $from = array("\\n", "\\r");
             $to = array("\n", "\r");
-        } lse {
+        } else {
             $from = array("\n", "\r");
             $to = array("\\n", "\\r");
         }
