@@ -1,0 +1,17 @@
+{
+    "name": "flintstone/flintstone",
+    "type": "library",
+    "description": "A key/value database store using flat files for PHP.",
+    "authors": [
+        {
+            "name": "Jason Margolin",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": { "": "src/" }
+    },
+    "require": {
+        "php": ">=5.1"
+    }
+}
