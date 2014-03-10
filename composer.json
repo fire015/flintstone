@@ -1,0 +1,21 @@
+{
+	"name": "fire015/flintstone",
+	"description": "A key/value database store using flat files for PHP",
+	"keywords": ["flintstone", "database", "cache", "files", "memory"],
+	"homepage": "http://www.xeweb.net/flintstone/",
+	"license": "MIT",
+	"authors": [
+	{
+		"name": "Jason M",
+		"email": "emailfire@gmail.com"
+	}
+	],
+	"require": {
+		"php": ">=5.3.0"
+	},
+	"autoload": {
+		"psr-0": {
+			"Flintstone": "src/"
+		}
+	}
+}
