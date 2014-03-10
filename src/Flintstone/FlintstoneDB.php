@@ -1,5 +1,7 @@
 <?php
 
+namespace Flintstone;
+
 class FlintstoneDB {
 
 	/**
