@@ -13,14 +13,33 @@ Features include:
 
 For full documentation please visit http://www.xeweb.net/flintstone/
 
-Requirements
--------------
+### Installation
 
-* PHP 5
-* Read/write file permissions
+The easiest way to install Flintstone is via [composer](http://getcomposer.org/). Create the following `composer.json` file and run the `php composer.phar install` command to install it.
 
-Data types
-----------
+```json
+{
+    "require": {
+        "fire015/flintstone": "*"
+    }
+}
+```
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Flintstone\Flintstone;
+
+$users = Flintstone::load('users', $options);
+```
+
+### Requirements
+
+- Any flavour of PHP 5.3+ should do
+- [optional] PHPUnit to execute the test suite
+
+### Data types
 
 Flintstone can store the following data types:
 
@@ -29,65 +48,50 @@ Flintstone can store the following data types:
 * Floats
 * Arrays
 
-Usage examples
----------------
+### Usage examples
 
-	try {
-	
-		// Set options
-		$options = array('dir' => '/path/to/database/dir/');
-		
-		// Load the databases
-		$users = Flintstone::load('users', $options);
-		$settings = Flintstone::load('settings', $options);
-		
-		// Set keys
-		$users->set('bob', array('email' => 'bob@site.com', 'password' => '123456'));
-		$users->set('joe', array('email' => 'joe@site.com', 'password' => 'test'));
-		$settings->set('site_offline', 1);
-		$settings->set('site_back', '3 days');
-		
-		// Retrieve keys
-		$user = $users->get('bob');
-		echo 'Bob, your email is ' . $user['email'];
-		
-		$offline = $settings->get('site_offline');
-		if ($offline == 1) {
-			echo 'Sorry, the website is offline<br />';
-			echo 'We will be back in ' . $settings->get('site_back');
-		}
-			
-		// Retrieve all key names
-		$keys = $users->getKeys(); // returns array('bob', 'joe', ...)
-		
-		foreach ($keys as $username) {
-			$user = $users->get($username);
-			echo $username.', your email is ' . $user['email'];
-			echo $username.', your password is ' . $user['password'];
-		}
-		
-		// Delete a key
-		$users->delete('joe');
-		
-		// Flush the database
-		$users->flush();
+```php
+try {
+
+	// Set options
+	$options = array('dir' => '/path/to/database/dir/');
+
+	// Load the databases
+	$users = Flintstone::load('users', $options);
+	$settings = Flintstone::load('settings', $options);
+
+	// Set keys
+	$users->set('bob', array('email' => 'bob@site.com', 'password' => '123456'));
+	$users->set('joe', array('email' => 'joe@site.com', 'password' => 'test'));
+	$settings->set('site_offline', 1);
+	$settings->set('site_back', '3 days');
+
+	// Retrieve keys
+	$user = $users->get('bob');
+	echo 'Bob, your email is ' . $user['email'];
+
+	$offline = $settings->get('site_offline');
+	if ($offline == 1) {
+		echo 'Sorry, the website is offline<br />';
+		echo 'We will be back in ' . $settings->get('site_back');
 	}
-	catch (FlintstoneException $e) {
-		echo 'An error occured: ' . $e->getMessage();
+
+	// Retrieve all key names
+	$keys = $users->getKeys(); // returns array('bob', 'joe', ...)
+
+	foreach ($keys as $username) {
+		$user = $users->get($username);
+		echo $username.', your email is ' . $user['email'];
+		echo $username.', your password is ' . $user['password'];
 	}
-	
 
-## Changelog
+	// Delete a key
+	$users->delete('joe');
 
-### 16/07/2013 - 1.3
-* Changed the load method to static so that multiple instances can be loaded without conflict (use Flintstone::load now instead of $db->load)
-* Exception thrown is now FlintstoneException
-
-### 23/01/2013 - 1.2
-* Removed the multibyte unserialize method as it seems to work without
-
-### 22/06/2012 - 1.1
-* Added new method getKeys() to return an array of keys in the database (thanks to sinky)
-
-### 17/06/2011 - 1.0
-* Initial release
+	// Flush the database
+	$users->flush();
+}
+catch (FlintstoneException $e) {
+	echo 'An error occured: ' . $e->getMessage();
+}
+```
