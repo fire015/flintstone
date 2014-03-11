@@ -36,4 +36,13 @@ class Flintstone {
 
 		return self::$instance[$database];
 	}
+	
+	/**
+	 * Unload a database
+	 * @param string $database the database name
+	 * @return void
+	 */
+	public static function unload($database) {
+		unset(self::$instance[$database]);
+	}
 }
