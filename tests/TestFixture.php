@@ -4,7 +4,9 @@
  * Flintstone Unit Tests
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../src/Flintstone/Flintstone.php';
+require __DIR__ . '/../src/Flintstone/FlintstoneDB.php';
+require __DIR__ . '/../src/Flintstone/FlintstoneException.php';
 
 use Flintstone\Flintstone;
 
