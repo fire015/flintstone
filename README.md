@@ -1,6 +1,9 @@
 Flintstone
 ==========
 
+[![Total Downloads](https://img.shields.io/packagist/dm/fire015/flintstone.svg)](https://packagist.org/packages/fire015/flintstone)
+[![Build Status](https://travis-ci.org/fire015/flintstone.svg?branch=master)](https://travis-ci.org/fire015/flintstone)
+
 A key/value database store using flat files for PHP.
 
 Features include:
