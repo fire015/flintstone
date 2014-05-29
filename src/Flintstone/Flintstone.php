@@ -14,7 +14,7 @@ class Flintstone {
 	 * @access public
 	 * @var string
 	 */
-	const VERSION = '1.4';
+	const VERSION = '1.5';
 
 	/**
 	 * Static instance
@@ -36,7 +36,7 @@ class Flintstone {
 
 		return self::$instance[$database];
 	}
-	
+
 	/**
 	 * Unload a database
 	 * @param string $database the database name
