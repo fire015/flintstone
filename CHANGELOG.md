@@ -1,5 +1,10 @@
 Change Log
 ==========
+### 29/05/2014 - 1.5
+* Reduced some internal complexity
+* Fixed gzip compression
+* Unit tests now running against all options
+* Removed `setOptions` method, must be passed into the `load` method
 
 ### 11/03/2014 - 1.4
 * Now using Composer

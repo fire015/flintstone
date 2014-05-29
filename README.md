@@ -23,7 +23,7 @@ The easiest way to install Flintstone is via [composer](http://getcomposer.org/)
 ```json
 {
     "require": {
-        "fire015/flintstone": "*"
+        "fire015/flintstone": "1.*"
     }
 }
 ```

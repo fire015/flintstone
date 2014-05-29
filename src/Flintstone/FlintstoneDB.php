@@ -24,6 +24,13 @@ class FlintstoneDB {
 	const FILE_WRITE = 2;
 
 	/**
+	 * File append flag
+	 * @access public
+	 * @var integer
+	 */
+	const FILE_APPEND = 3;
+
+	/**
 	 * Database data
 	 * @access private
 	 * @var array
@@ -39,10 +46,10 @@ class FlintstoneDB {
 	 * - boolean	$cache				store get() results in memory
 	 * - integer	$swap_memory_limit	write out each line to a temporary file and swap if database is larger than limit (0 to always do this)
 	 *
-	 * @access public
+	 * @access private
 	 * @var array
 	 */
-	public $options = array(
+	private $options = array(
 		'dir' => '',
 		'ext' => '.dat',
 		'gzip' => false,
@@ -65,20 +72,11 @@ class FlintstoneDB {
 
 		// Set options
 		if (!empty($options)) {
-			$this->setOptions($options);
+			$this->options = array_merge($this->options, $options);
 		}
 
 		// Setup database
 		$this->setupDatabase($database);
-	}
-
-	/**
-	 * Set flintstone options
-	 * @param array $options an array of options
-	 * @return void
-	 */
-	public function setOptions($options) {
-		$this->options = array_merge($this->options, $options);
 	}
 
 	/**
@@ -143,21 +141,27 @@ class FlintstoneDB {
 			$file = 'compress.zlib://' . $file;
 		}
 
-		// Open in read or write mode
+		// Open in read, write or append mode
 		if ($mode == self::FILE_READ) {
-			$fp = @fopen($file, 'rb');
+			$mode = 'rb';
 			$operation = LOCK_SH;
 		}
-		else {
-			$fp = @fopen($file, 'ab');
+		elseif ($mode == self::FILE_WRITE) {
+			$mode = 'wb';
 			$operation = LOCK_EX;
 		}
+		else {
+			$mode = 'ab';
+			$operation = LOCK_EX;
+		}
+
+		$fp = @fopen($file, $mode);
 
 		if (!$fp) {
 			throw new FlintstoneException('Could not open file ' . $file);
 		}
 
-		if (!@flock($fp, $operation)) {
+		if (($this->options['gzip'] === false) && (!@flock($fp, $operation))) {
 			throw new FlintstoneException('Could not lock file ' . $file);
 		}
 
@@ -170,7 +174,7 @@ class FlintstoneDB {
 	 * @return void
 	 */
 	private function closeFile($fp) {
-		if (!@flock($fp, LOCK_UN)) {
+		if (($this->options['gzip'] === false) && (!@flock($fp, LOCK_UN))) {
 			throw new FlintstoneException('Could not unlock file');
 		}
 
@@ -261,7 +265,7 @@ class FlintstoneDB {
 
 			// Create a copy of data to push into cache
 			if ($this->options['cache'] === true) {
-				$orig_data = $data;
+				$origData = $data;
 			}
 
 			// Preserve new lines
@@ -273,7 +277,7 @@ class FlintstoneDB {
 
 		// Open tmp file
 		if ($swap) {
-			$tp = $this->openFile($this->data['file_tmp'], self::FILE_WRITE);
+			$tp = $this->openFile($this->data['file_tmp'], self::FILE_APPEND);
 		}
 
 		// Open file
@@ -296,7 +300,7 @@ class FlintstoneDB {
 
 				// Save to cache
 				if ($this->options['cache'] === true) {
-					$this->data['cache'][$key] = $orig_data;
+					$this->data['cache'][$key] = $origData;
 				}
 			}
 
@@ -331,11 +335,6 @@ class FlintstoneDB {
 
 			// Open file
 			$fp = $this->openFile($this->data['file'], self::FILE_WRITE);
-
-			// Truncate
-			if (!@ftruncate($fp, 0)) {
-				throw new FlintstoneException('Could not truncate file ' . $this->data['file']);
-			}
 
 			// Write contents
 			if (@fwrite($fp, $contents) === false) {
@@ -380,7 +379,7 @@ class FlintstoneDB {
 		$line = $key . "=" . $data . "\n";
 
 		// Open file
-		$fp = $this->openFile($this->data['file'], self::FILE_WRITE);
+		$fp = $this->openFile($this->data['file'], self::FILE_APPEND);
 
 		// Write line
 		if (@fwrite($fp, $line) === false) {
@@ -426,11 +425,6 @@ class FlintstoneDB {
 
 		// Open file
 		$fp = $this->openFile($this->data['file'], self::FILE_WRITE);
-
-		// Truncate
-		if (!@ftruncate($fp, 0)) {
-			throw new FlintstoneException('Could not truncate file ' . $this->data['file']);
-		}
 
 		// Close file
 		$this->closeFile($fp);
@@ -607,5 +601,13 @@ class FlintstoneDB {
 	 */
 	public function getKeys() {
 		return $this->getAllKeys();
+	}
+
+	/**
+	 * Get the database file
+	 * @return string file path
+	 */
+	public function getFile() {
+		return $this->data['file'];
 	}
 }
