@@ -4,9 +4,7 @@
  * Flintstone Unit Tests
  */
 
-require __DIR__ . '/../src/Flintstone/Flintstone.php';
-require __DIR__ . '/../src/Flintstone/FlintstoneDB.php';
-require __DIR__ . '/../src/Flintstone/FlintstoneException.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use Flintstone\Flintstone;
 
@@ -20,18 +18,52 @@ class TestFixture extends \PHPUnit_Framework_TestCase {
 	protected $db;
 
 	/**
-	 * Load the test database
+	 * Flintstone database name
+	 * @access protected
+	 * @var string
 	 */
-	public function setUp() {
-		$this->db = Flintstone::load('test', array('dir' => __DIR__));
+	protected $dbName = 'test';
+
+	/**
+	 * Run the feature test multiple times with different options
+	 */
+	public function run(PHPUnit_Framework_TestResult $result = null) {
+		if ($result === null) {
+			$result = $this->createResult();
+		}
+
+		// Default options
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__));
+		$result->run($this);
+
+		// With no cache
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'cache' => false));
+		$result->run($this);
+
+		// With no cache and file swap
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'cache' => false, 'swap_memory_limit' => 0));
+		$result->run($this);
+
+		// With gzip compression
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'gzip' => true));
+		$result->run($this);
+
+		// With gzip compression and no cache
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'gzip' => true, 'cache' => false));
+		$result->run($this);
+
+		// With gzip compression, no cache and file swap
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'gzip' => true, 'cache' => false, 'swap_memory_limit' => 0));
+		$result->run($this);
+
+		return $result;
 	}
 
 	/**
 	 * Unload the test database and remove
 	 */
 	public function tearDown() {
-		Flintstone::unload('test');
-		$file = __DIR__ . '/test.dat';
-		unlink($file);
+		Flintstone::unload($this->dbName);
+		unlink($this->db->getFile());
 	}
 }

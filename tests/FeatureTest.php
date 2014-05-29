@@ -58,8 +58,8 @@ class FeatureTest extends TestFixture {
 		$this->assertTrue($this->db->set('a', '1'));
 		$this->assertTrue($this->db->set('b', 2));
 		$this->assertTrue($this->db->flush());
-		$this->assertFalse($this->db->get('a'));
-		$this->assertFalse($this->db->get('b'));
+		$keys = $this->db->getKeys();
+		$this->assertEquals(0, count($keys));
 	}
 
 	/**
