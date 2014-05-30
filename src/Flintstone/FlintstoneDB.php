@@ -7,6 +7,10 @@
 
 namespace Flintstone;
 
+/**
+ * The Flintstone database specific class
+ */
+
 class FlintstoneDB {
 
 	/**
@@ -61,6 +65,7 @@ class FlintstoneDB {
 	 * Flintstone constructor
 	 * @param string $database the database name
 	 * @param array $options an array of options
+	 * @throws FlintstoneException when database cannot be loaded
 	 * @return void
 	 */
 	public function __construct($database, $options) {
@@ -82,6 +87,7 @@ class FlintstoneDB {
 	/**
 	 * Setup the database and perform pre-flight checks
 	 * @param string $database the database name
+	 * @throws FlintstoneException when database cannot be loaded
 	 * @return void
 	 */
 	private function setupDatabase($database) {
@@ -120,6 +126,7 @@ class FlintstoneDB {
 	/**
 	 * Create a database file
 	 * @param string $file the file path
+	 * @throws FlintstoneException when database cannot be created
 	 * @return void
 	 */
 	private function createFile($file) {
@@ -132,6 +139,7 @@ class FlintstoneDB {
 	 * Open the database file
 	 * @param string $file the file path
 	 * @param integer $mode the file mode
+	 * @throws FlintstoneException when database cannot be opened or locked
 	 * @return object file pointer
 	 */
 	private function openFile($file, $mode) {
@@ -171,6 +179,7 @@ class FlintstoneDB {
 	/**
 	 * Close the database file
 	 * @param object $fp the file pointer
+	 * @throws FlintstoneException when database cannot be unlocked
 	 * @return void
 	 */
 	private function closeFile($fp) {
@@ -245,6 +254,7 @@ class FlintstoneDB {
 	 * Replace a key in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store, or false to delete
+	 * @throws FlintstoneException when database cannot be written to
 	 * @return boolean successful replace
 	 */
 	private function replaceKey($key, $data) {
@@ -355,6 +365,7 @@ class FlintstoneDB {
 	 * Set a key to store in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store
+	 * @throws FlintstoneException when database cannot be written to
 	 * @return boolean
 	 */
 	private function setKey($key, $data) {
@@ -497,6 +508,7 @@ class FlintstoneDB {
 	/**
 	 * Check the database has been loaded and valid key
 	 * @param string $key the key
+	 * @throws FlintstoneException when key is invalid
 	 * @return boolean
 	 */
 	private function isValidKey($key) {
@@ -523,6 +535,7 @@ class FlintstoneDB {
 	/**
 	 * Check the data type is valid
 	 * @param mixed $data the data
+	 * @throws FlintstoneException when data is invalid
 	 * @return boolean
 	 */
 	private function isValidData($data) {

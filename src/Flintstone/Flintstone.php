@@ -7,6 +7,10 @@
 
 namespace Flintstone;
 
+/**
+ * The Flintstone database loader
+ */
+
 class Flintstone {
 
 	/**
@@ -27,7 +31,8 @@ class Flintstone {
 	 * Load a database
 	 * @param string $database the database name
 	 * @param array $options an array of options
-	 * @return object the FlintstoneDB class
+	 * @return FlintstoneDB class
+	 * @throws FlintstoneException when database cannot be loaded
 	 */
 	public static function load($database, $options = array()) {
 		if (!array_key_exists($database, self::$instance)) {
