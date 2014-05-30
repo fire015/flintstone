@@ -185,14 +185,15 @@ class FlintstoneDB {
 	/**
 	 * Get a key from the database
 	 * @param string $key the key
+	 * @param bool $reload the value form disk
 	 * @return mixed the data
 	 */
-	private function getKey($key) {
+	private function getKey($key, $reload = false) {
 
 		$data = false;
 
 		// Look in cache for key
-		if ($this->options['cache'] === true && array_key_exists($key, $this->data['cache'])) {
+		if (! $reload && $this->options['cache'] === true && array_key_exists($key, $this->data['cache'])) {
 			return $this->data['cache'][$key];
 		}
 
@@ -536,11 +537,12 @@ class FlintstoneDB {
 	/**
 	 * Get a key from the database
 	 * @param string $key the key
+	 * @param bool $reload the value form disk
 	 * @return mixed the data
 	 */
-	public function get($key) {
+	public function get($key, $reload = false) {
 		if ($this->isValidKey($key)) {
-			return $this->getKey($key);
+			return $this->getKey($key, $reload);
 		}
 
 		return false;
