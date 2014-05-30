@@ -549,59 +549,56 @@ class FlintstoneDB {
 	/**
 	 * Get a key from the database
 	 * @param string $key the key
+	 * @throws FlintstoneException when key is invalid
 	 * @return mixed the data
 	 */
 	public function get($key) {
 		if ($this->isValidKey($key)) {
 			return $this->getKey($key);
 		}
-
-		return false;
 	}
 
 	/**
 	 * Set a key to store in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store
+	 * @throws FlintstoneException when key or data is invalid
 	 * @return boolean successful set
 	 */
 	public function set($key, $data) {
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
 			return $this->setKey($key, $data);
 		}
-
-		return false;
 	}
 
 	/**
 	 * Replace a key in the database
 	 * @param string $key the key
 	 * @param mixed $data the data to store
+	 * @throws FlintstoneException when key or data is invalid
 	 * @return boolean successful replace
 	 */
 	public function replace($key, $data) {
 		if ($this->isValidKey($key) && $this->isValidData($data)) {
 			return $this->replaceKey($key, $data);
 		}
-
-		return false;
 	}
 
 	/**
 	 * Delete a key from the database
 	 * @param string $key the key
+	 * @throws FlintstoneException when key is invalid
 	 * @return boolean successful delete
 	 */
 	public function delete($key) {
 		if ($this->isValidKey($key)) {
 			return $this->deleteKey($key);
 		}
-
-		return false;
 	}
 
 	/**
 	 * Flush the database
+	 * @throws FlintstoneException when something goes wrong
 	 * @return boolean successful flush
 	 */
 	public function flush() {
@@ -610,6 +607,7 @@ class FlintstoneDB {
 
 	/**
 	 * Get all keys from the database
+	 * @throws FlintstoneException when something goes wrong
 	 * @return array list of keys
 	 */
 	public function getKeys() {

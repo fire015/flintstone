@@ -25,6 +25,22 @@ class TestFixture extends \PHPUnit_Framework_TestCase {
 	protected $dbName = 'test';
 
 	/**
+	 * Test invalid database name
+	 * @expectedException Flintstone\FlintstoneException
+	 */
+	public function testInvalidDatabaseName() {
+		Flintstone::load('test!123');
+	}
+
+	/**
+	 * Test invalid database directory
+	 * @expectedException Flintstone\FlintstoneException
+	 */
+	public function testInvalidDatabaseDir() {
+		Flintstone::load('blah', array('dir' => '/x/y/z'));
+	}
+
+	/**
 	 * Run the feature test multiple times with different options
 	 */
 	public function run(PHPUnit_Framework_TestResult $result = null) {
@@ -37,7 +53,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase {
 		$result->run($this);
 
 		// With no cache
-		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'cache' => false));
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'cache' => false, 'ext' => 'txt'));
 		$result->run($this);
 
 		// With no cache and file swap
@@ -45,7 +61,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase {
 		$result->run($this);
 
 		// With gzip compression
-		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'gzip' => true));
+		$this->db = Flintstone::load($this->dbName, array('dir' => __DIR__, 'gzip' => true, 'ext' => 'txt'));
 		$result->run($this);
 
 		// With gzip compression and no cache
@@ -65,5 +81,6 @@ class TestFixture extends \PHPUnit_Framework_TestCase {
 	public function tearDown() {
 		Flintstone::unload($this->dbName);
 		unlink($this->db->getFile());
+		clearstatcache();
 	}
 }
