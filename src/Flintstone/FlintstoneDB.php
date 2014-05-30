@@ -54,6 +54,7 @@ class FlintstoneDB {
 		'ext' => '.dat',
 		'gzip' => false,
 		'cache' => true,
+		'load' => false,
 		'swap_memory_limit' => 1048576
 	);
 
@@ -114,6 +115,42 @@ class FlintstoneDB {
 		// Check file is writable
 		if (!is_writable($this->data['file'])) {
 			throw new FlintstoneException('Could not write to file ' . $this->data['file']);
+		}
+		if( $this->options['load'] && $this->options['cache'] )
+		{
+			// Open file
+			$fp = $this->openFile($this->data['file'], self::FILE_READ);
+
+			// Loop through each line of file
+			while( ( $line = fgets( $fp ) ) !== false )
+			{
+				// Remove new line character from end
+				$line = rtrim($line);
+
+				// Split up seperator
+				$pieces = explode("=", $line);
+
+				// Put remaining pieces back together
+				if (count($pieces) > 2)
+				{
+					array_shift($pieces);
+					$data = implode("=", $pieces);
+				}
+				else
+				{
+					$data = $pieces[1];
+				}
+				// Unserialize data
+				$data = unserialize($data);
+
+				// Preserve new lines
+				$data = $this->preserveLines($data, true);
+
+				// Save to cache
+				$this->data['cache'][$pieces[0]] = $data;
+			}
+			// Close file
+			$this->closeFile($fp);
 		}
 	}
 
@@ -451,6 +488,9 @@ class FlintstoneDB {
 
 		// Loop through each line of file
 		while (($line = fgets($fp)) !== false) {
+
+			// Remove new line character from end
+			$line = rtrim($line);
 
 			// Split up seperator
 			$pieces = explode("=", $line);
