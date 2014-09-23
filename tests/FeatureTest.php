@@ -40,12 +40,12 @@ class FeatureTest extends TestFixture {
 		$this->assertFalse($this->db->get(''));
 	}
 
-    /**
-     * Test complex key
-     */
-    public function testComplexKey() {
-        $this->assertFalse($this->db->get('users:1:name'));
-    }
+    	/**
+     	 * Test complex key
+     	*/
+    	public function testComplexKey() {
+        	$this->assertFalse($this->db->get('users:1:name'));
+    	}
 
 	/**
 	 * Test huge key
