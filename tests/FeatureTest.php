@@ -30,23 +30,29 @@ class FeatureTest extends TestFixture {
 	 * @expectedException Flintstone\FlintstoneException
 	 */
 	public function testInvalidKey() {
-		$this->db->get('test!123');
+		$this->db->get(1);
 	}
 
 	/**
 	 * Test blank key
-	 * @expectedException Flintstone\FlintstoneException
 	 */
 	public function testBlankKey() {
-		$this->db->get('');
+		$this->assertFalse($this->db->get(''));
 	}
+
+    	/**
+     	 * Test complex key
+     	*/
+    	public function testComplexKey() {
+        	$this->assertFalse($this->db->get('users:1:name'));
+    	}
 
 	/**
 	 * Test huge key
 	 * @expectedException Flintstone\FlintstoneException
 	 */
 	public function testHugeKey() {
-		$this->db->get(str_repeat('a', 100));
+		$this->db->get(str_repeat('a', 2048));
 	}
 
 	/**

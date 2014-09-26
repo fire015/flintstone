@@ -512,24 +512,15 @@ class FlintstoneDB {
 	 * @return boolean
 	 */
 	private function isValidKey($key) {
+        	if (!is_string($key)) {
+            		throw new FlintstoneException('Key must be string');
+        	}
 
-		// Check key length
-		$len = strlen($key);
+        	if (strlen($key) > 1024) {
+            		throw new FlintstoneException('Maximum key length is 1024 characters');
+        	}
 
-		if ($len < 1) {
-			throw new FlintstoneException('No key has been set');
-		}
-
-		if ($len > 50) {
-			throw new FlintstoneException('Maximum key length is 50 characters');
-		}
-
-		// Check valid characters in key
-		if (!preg_match("/^[A-Za-z0-9_\-]+$/", $key)) {
-			throw new FlintstoneException('Invalid characters in key');
-		}
-
-		return true;
+        	return true;
 	}
 
 	/**
