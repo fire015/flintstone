@@ -1,5 +1,9 @@
 Change Log
 ==========
+### 30/09/2014 - 1.6
+* Updated limits on valid characters in key name and size
+* Improved unit tests
+
 ### 29/05/2014 - 1.5
 * Reduced some internal complexity
 * Fixed gzip compression
