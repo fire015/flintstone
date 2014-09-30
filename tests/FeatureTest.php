@@ -34,18 +34,26 @@ class FeatureTest extends TestFixture {
 	}
 
 	/**
+	 * Test invalid character key
+	 * @expectedException Flintstone\FlintstoneException
+	 */
+	public function testInvalidChrKey() {
+		$this->db->get('a=b');
+	}
+
+	/**
 	 * Test blank key
 	 */
 	public function testBlankKey() {
 		$this->assertFalse($this->db->get(''));
 	}
 
-    	/**
-     	 * Test complex key
-     	*/
-    	public function testComplexKey() {
-        	$this->assertFalse($this->db->get('users:1:name'));
-    	}
+	/**
+	 * Test complex key
+	*/
+	public function testComplexKey() {
+		$this->assertFalse($this->db->get('users:1:name'));
+	}
 
 	/**
 	 * Test huge key

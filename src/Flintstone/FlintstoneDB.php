@@ -512,15 +512,19 @@ class FlintstoneDB {
 	 * @return boolean
 	 */
 	private function isValidKey($key) {
-        	if (!is_string($key)) {
-            		throw new FlintstoneException('Key must be string');
-        	}
+		if (!is_string($key)) {
+			throw new FlintstoneException('Key must be a string');
+		}
 
-        	if (strlen($key) > 1024) {
-            		throw new FlintstoneException('Maximum key length is 1024 characters');
-        	}
+		if (strlen($key) > 1024) {
+			throw new FlintstoneException('Maximum key length is 1024 characters');
+		}
 
-        	return true;
+		if (strpos($key, '=') !== false) {
+			throw new FlintstoneException('Key may not contain the equals character');
+		}
+
+		return true;
 	}
 
 	/**
