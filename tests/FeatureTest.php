@@ -3,6 +3,7 @@
 /**
  * Flintstone Unit Tests
  */
+namespace Flinstone\tests;
 
 class FeatureTest extends TestFixture
 {

@@ -4,10 +4,11 @@
  * Flintstone Unit Tests
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+namespace Flinstone\tests;
 
 use Flintstone\Flintstone;
 use Flintstone\FlintstoneException;
+use PHPUnit_Framework_TestResult;
 
 class TestFixture extends \PHPUnit_Framework_TestCase
 {
@@ -43,34 +44,16 @@ class TestFixture extends \PHPUnit_Framework_TestCase
         Flintstone::load('blah', array('dir' => '/x/y/z'));
     }
 
-    /**
-     * Test invalid database directory
-     * @expectedException Flintstone\FlintstoneException
-     */
     public function testInvalidDatabaseCreation()
     {
         $dbh = Flintstone::load('foo', array(
-            'dir' => '/usr/bin',
-            'ext' => 'cache',
-            'gzip' => true,
+            'dir' => __DIR__,
+            'ext' => 'toto',
+            'cache' => true,
+            'gzip' => true
         ));
-        $dbh->get('foo');
-    }
-
-    /**
-     * Test invalid database directory
-     * @expectedException Flintstone\FlintstoneException
-     */
-    public function testUsingMemoryCache()
-    {
-        $dbh = Flintstone::load('foo', array('dir' => __DIR__));
         $dbh->set('foo', 'bar');
-        $dbh = null;
-
-        $altdb = Flintstone::load('foo', array('dir' => __DIR__));
-        $this->assertAttributeEquals(array(), 'cache', $altdb);
-        $altdb->get('foo');
-        $this->assertAttributeEquals(array('foo' => 'bar'), 'cache', $altdb);
+        $this->assertSame('bar', $dbh->get('foo'));
     }
 
     /**
@@ -107,18 +90,19 @@ class TestFixture extends \PHPUnit_Framework_TestCase
         // With gzip compression and no cache
         $this->db = Flintstone::load($this->dbName, array(
             'dir'   => __DIR__,
-            'gzip'  => true,
             'cache' => false,
+            'gzip'  => true,
             'swap_memory_limit' => 0
         ));
         $result->run($this);
 
-        // With gzip compression and no cache
+        // With gzip compression and cache
         $this->db = Flintstone::load($this->dbName, array(
             'dir'   => __DIR__,
-            'gzip'  => true,
             'cache' => true,
+            'gzip'  => true,
         ));
+
         $result->run($this);
 
         $this->db = Flintstone::load($this->dbName, array(
@@ -138,6 +122,8 @@ class TestFixture extends \PHPUnit_Framework_TestCase
     {
         Flintstone::unload($this->dbName);
         @unlink($this->db->getFile());
+        @unlink(__DIR__.'/foo.dat');
+        @unlink(__DIR__.'/foo.toto.gz');
         clearstatcache();
     }
 }

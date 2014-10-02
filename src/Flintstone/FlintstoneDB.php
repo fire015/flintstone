@@ -64,6 +64,20 @@ class FlintstoneDB
     private $cache = array();
 
     /**
+     * Tell whether the cache is enabled or not
+     *
+     * @var boolean
+     */
+    private $cache_enabled = true;
+
+    /**
+     * Tell whether gzip is enabled or not
+     *
+     * @var boolean
+     */
+    private $gzip_enabled = false;
+
+    /**
      * Database File Path
      *
      * @var string
@@ -78,13 +92,6 @@ class FlintstoneDB
     private $swap_memory_limit;
 
     /**
-     * Swap Memory Limit
-     *
-     * @var  integer
-     */
-    private $default_swap_memory = 1048576;
-
-    /**
      * Flintstone options:
      *
      * - string		$dir				the directory to the database files
@@ -96,12 +103,12 @@ class FlintstoneDB
      *
      * @var array
      */
-    private $options = array(
+    private $default_options = array(
         'dir' => '',
         'ext' => '.dat',
         'gzip' => false,
         'cache' => true,
-        'swap_memory_limit' => -1,
+        'swap_memory_limit' => 1048576,
     );
 
     /**
@@ -116,30 +123,37 @@ class FlintstoneDB
      */
     public function __construct($database, array $options = array())
     {
-        if (!preg_match("/^[A-Za-z0-9_\-]+$/", $database)) {
+        if (! preg_match("/^[A-Za-z0-9_\-]+$/", $database)) {
             throw new FlintstoneException('Invalid characters in database name');
         }
-        $this->options = array_merge($this->options, $options);
-        $dir = rtrim($this->options['dir'], '/\\') . DIRECTORY_SEPARATOR;
+
+        $options = array_merge($this->default_options, $options);
+        $dir = rtrim($options['dir'], '/\\') . DIRECTORY_SEPARATOR;
         if (!is_dir($dir)) {
             throw new FlintstoneException($dir.' is not a valid directory');
         }
 
-        $ext = $this->options['ext'];
-        if (substr($ext, 0, 1) !== ".") {
-            $ext = "." . $ext;
-        }
-        if ($this->options['gzip'] === true && substr($ext, -3) !== ".gz") {
-            $ext .= ".gz";
-        }
-
-        $this->file = $dir.$database.$ext;
-
         $this->swap_memory_limit = filter_var(
-            $this->options['swap_memory_limit'],
+            $options['swap_memory_limit'],
             FILTER_VALIDATE_INT,
-            array('options' => array('min_range' => 0, 'default' => $this->default_swap_memory))
+            array('options' => array('min_range' => 0, 'default' => $this->default_options['swap_memory_limit']))
         );
+
+        if ($options['cache'] !== $this->default_options['cache']) {
+            $this->cache_enabled = !$this->cache_enabled;
+        }
+
+        if ($options['gzip'] !== $this->default_options['gzip']) {
+            $this->gzip_enabled = !$this->gzip_enabled;
+        }
+
+        $extension = filter_var(
+            $options['ext'],
+            FILTER_SANITIZE_STRING,
+            array('flags' => FILTER_FLAG_STRIP_LOW|FILTER_FLAG_STRIP_HIGH)
+        );
+
+        $this->setFile($dir, $database, $extension);
     }
 
     /**
@@ -156,7 +170,7 @@ class FlintstoneDB
         $key = $this->normalizeKey($key);
 
         $data = false;
-        if ($this->options['cache'] === true && array_key_exists($key, $this->cache)) {
+        if ($this->cache_enabled && array_key_exists($key, $this->cache)) {
             return $this->cache[$key];
         }
 
@@ -171,7 +185,7 @@ class FlintstoneDB
         }
 
         $this->closeFile($filepointer);
-        if ($this->options['cache'] === true && false !== $data) {
+        if ($this->cache_enabled && false !== $data) {
             $this->cache[$key] = $data;
         }
 
@@ -197,7 +211,7 @@ class FlintstoneDB
             return $this->replace($key, $data);
         }
 
-        if ($this->options['cache'] === true) {
+        if ($this->cache_enabled) {
             $this->cache[$key] = $data;
         }
 
@@ -313,6 +327,79 @@ class FlintstoneDB
     }
 
     /**
+     * Set the file
+     *
+     * @param string $directory file directory
+     * @param string $basename  file basename
+     * @param string $ext       file extension
+     *
+     */
+    private function setFile($directory, $basename, $ext)
+    {
+        if (substr($ext, 0, 1) !== ".") {
+            $ext = ".$ext";
+        }
+        if ($this->gzip_enabled && substr($ext, -3) !== ".gz") {
+            $ext .= ".gz";
+        }
+
+        $this->file = $directory.$basename.$ext;
+    }
+
+    /**
+     * Open the database file
+     *
+     * @param integer $mode the file mode
+     *
+     * @throws FlintstoneException when database cannot be opened or locked
+     *
+     * @return \SplFileObject
+     */
+    private function openFile($mode)
+    {
+        $path = $this->file;
+
+        if (!file_exists($path) && !@touch($path)) {
+            throw new FlintstoneException('Could not create file ' . $path);
+        } elseif (!is_readable($path)) {
+            throw new FlintstoneException('Could not read file ' . $path);
+        } elseif (!is_writable($path)) {
+            throw new FlintstoneException('Could not write to file ' . $path);
+        }
+
+        if ($this->gzip_enabled) {
+            $path = 'compress.zlib://' . $path;
+        }
+        $res  = $this->file_access_mode[$mode];
+
+        $file = new SplFileObject($path, $res['mode']);
+        $file->setFlags(SplFileObject::DROP_NEW_LINE|SplFileObject::SKIP_EMPTY|SplFileObject::READ_AHEAD);
+        if (! $this->gzip_enabled && !$file->flock($res['operation'])) {
+            throw new FlintstoneException('Could not lock file ' . $path);
+        }
+
+        return $file;
+    }
+
+    /**
+     * Close the database file
+     *
+     * @param object $file the file pointer
+     *
+     * @throws FlintstoneException when database cannot be unlocked
+     *
+     * @return void
+     */
+    private function closeFile($file)
+    {
+        if (! $this->gzip_enabled && ! $file->flock(LOCK_UN)) {
+            $file = null;
+            throw new FlintstoneException('Could not unlock file');
+        }
+        $file = null;
+    }
+
+    /**
      * Check the database has been loaded and valid key
      *
      * @param string $key the key
@@ -344,59 +431,6 @@ class FlintstoneDB
         if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
             throw new FlintstoneException('Invalid data type');
         }
-    }
-
-    /**
-     * Open the database file
-     *
-     * @param integer $mode the file mode
-     *
-     * @throws FlintstoneException when database cannot be opened or locked
-     *
-     * @return \SplFileObject
-     */
-    private function openFile($mode)
-    {
-        $path = $this->file;
-
-        if (!file_exists($path) && !@touch($path)) {
-            throw new FlintstoneException('Could not create file ' . $path);
-        } elseif (!is_readable($path)) {
-            throw new FlintstoneException('Could not read file ' . $path);
-        } elseif (!is_writable($path)) {
-            throw new FlintstoneException('Could not write to file ' . $path);
-        }
-
-        if ($this->options['gzip'] === true) {
-            $path = 'compress.zlib://' . $path;
-        }
-        $res  = $this->file_access_mode[$mode];
-
-        $file = new SplFileObject($path, $res['mode']);
-        $file->setFlags(SplFileObject::DROP_NEW_LINE|SplFileObject::SKIP_EMPTY|SplFileObject::READ_AHEAD);
-        if (!$this->options['gzip'] && !$file->flock($res['operation'])) {
-            throw new FlintstoneException('Could not lock file ' . $path);
-        }
-
-        return $file;
-    }
-
-    /**
-     * Close the database file
-     *
-     * @param object $file the file pointer
-     *
-     * @throws FlintstoneException when database cannot be unlocked
-     *
-     * @return void
-     */
-    private function closeFile($file)
-    {
-        if (!$this->options['gzip'] && !$file->flock(LOCK_UN)) {
-            $file = null;
-            throw new FlintstoneException('Could not unlock file');
-        }
-        $file = null;
     }
 
     /**
@@ -433,7 +467,7 @@ class FlintstoneDB
                 return null;
             }
             $line = "$key=$serializeData\n";
-            if (true === $this->options['cache']) {
+            if ($this->cache_enabled) {
                 $this->cache[$key] = $data;
             }
         }
