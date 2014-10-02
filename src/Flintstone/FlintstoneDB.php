@@ -13,7 +13,6 @@ use SplTempFileObject;
 /**
  * The Flintstone database specific class
  */
-
 class FlintstoneDB
 {
     /**
@@ -72,6 +71,20 @@ class FlintstoneDB
     private $file;
 
     /**
+     * Swap Memory Limit
+     *
+     * @var  integer
+     */
+    private $swap_memory_limit;
+
+    /**
+     * Swap Memory Limit
+     *
+     * @var  integer
+     */
+    private $default_swap_memory = 1048576;
+
+    /**
      * Flintstone options:
      *
      * - string		$dir				the directory to the database files
@@ -88,6 +101,7 @@ class FlintstoneDB
         'ext' => '.dat',
         'gzip' => false,
         'cache' => true,
+        'swap_memory_limit' => -1,
     );
 
     /**
@@ -106,23 +120,9 @@ class FlintstoneDB
             throw new FlintstoneException('Invalid characters in database name');
         }
         $this->options = array_merge($this->options, $options);
-        $this->setupDatabase($database);
-    }
-
-    /**
-     * Setup the database and perform pre-flight checks
-     *
-     * @param string $database the database name
-     *
-     * @throws FlintstoneException when database cannot be loaded
-     *
-     * @return void
-     */
-    private function setupDatabase($database)
-    {
         $dir = rtrim($this->options['dir'], '/\\') . DIRECTORY_SEPARATOR;
         if (!is_dir($dir)) {
-            throw new FlintstoneException($dir . ' is not a valid directory');
+            throw new FlintstoneException($dir.' is not a valid directory');
         }
 
         $ext = $this->options['ext'];
@@ -133,17 +133,13 @@ class FlintstoneDB
             $ext .= ".gz";
         }
 
-        $file = $dir.$database.$ext;
+        $this->file = $dir.$database.$ext;
 
-        if (!file_exists($file) && !@touch($file)) {
-            throw new RuntimeException('Could not create file ' . $file);
-        } elseif (!is_readable($file)) {
-            throw new RuntimeException('Could not read file ' . $file);
-        } elseif (!is_writable($file)) {
-            throw new RuntimeException('Could not write to file ' . $file);
-        }
-
-        $this->file = $file;
+        $this->swap_memory_limit = filter_var(
+            $this->options['swap_memory_limit'],
+            FILTER_VALIDATE_INT,
+            array('options' => array('min_range' => 0, 'default' => $this->default_swap_memory))
+        );
     }
 
     /**
@@ -157,7 +153,29 @@ class FlintstoneDB
      */
     public function get($key)
     {
-        return $this->getKey($this->normalizeKey($key));
+        $key = $this->normalizeKey($key);
+
+        $data = false;
+        if ($this->options['cache'] === true && array_key_exists($key, $this->cache)) {
+            return $this->cache[$key];
+        }
+
+        $filepointer = $this->openFile(self::FILE_READ);
+        foreach ($filepointer as $line) {
+            $data = $this->getDataFromLine($line, $key);
+            if (false === $data) {
+                continue;
+            }
+            $data = $this->preserveLines(unserialize($data), true);
+            break;
+        }
+
+        $this->closeFile($filepointer);
+        if ($this->options['cache'] === true && false !== $data) {
+            $this->cache[$key] = $data;
+        }
+
+        return $data;
     }
 
     /**
@@ -173,8 +191,23 @@ class FlintstoneDB
     public function set($key, $data)
     {
         $this->validateData($data);
+        $key = $this->normalizeKey($key);
 
-        return $this->setKey($this->normalizeKey($key), $data);
+        if ($this->get($key) !== false) {
+            return $this->replace($key, $data);
+        }
+
+        if ($this->options['cache'] === true) {
+            $this->cache[$key] = $data;
+        }
+
+        $data = $this->serializeData($data);
+        $line = "$key=$data\n";
+        $filepointer = $this->openFile(self::FILE_APPEND);
+        $filepointer->fwrite($line);
+        $this->closeFile($filepointer);
+
+        return true;
     }
 
     /**
@@ -189,9 +222,28 @@ class FlintstoneDB
      */
     public function replace($key, $data)
     {
-        $this->validateData($data);
+        $key = $this->normalizeKey($key);
 
-        return $this->replaceKey($this->normalizeKey($key), $data);
+        $tmp = new SplTempFileObject($this->swap_memory_limit);
+        $filepointer = $this->openFile(self::FILE_READ);
+        foreach ($filepointer as $line) {
+            $line = $this->replaceLine($line, $key, $data);
+            if (empty($line)) {
+                continue;
+            }
+            $tmp->fwrite($line);
+        }
+        $this->closeFile($filepointer);
+        $tmp->rewind();
+
+        $filepointer = $this->openFile(self::FILE_WRITE);
+        foreach ($tmp as $line) {
+            $filepointer->fwrite($line."\n");
+        }
+        $tmp = null;
+        $this->closeFile($filepointer);
+
+        return true;
     }
 
     /**
@@ -205,7 +257,13 @@ class FlintstoneDB
      */
     public function delete($key)
     {
-        return $this->deleteKey($this->normalizeKey($key));
+        if ($this->get($key) !== false && $this->replace($key, false)) {
+            unset($this->cache[$key]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -217,7 +275,11 @@ class FlintstoneDB
      */
     public function flush()
     {
-        return $this->flushDatabase();
+        $filepointer = $this->openFile(self::FILE_WRITE);
+        $this->closeFile($filepointer);
+        $this->cache = array();
+
+        return true;
     }
 
     /**
@@ -229,7 +291,15 @@ class FlintstoneDB
      */
     public function getKeys()
     {
-        return $this->getAllKeys();
+        $keys = array();
+        $filepointer = $this->openFile(self::FILE_READ);
+        foreach ($filepointer as $line) {
+            $pieces = explode("=", $line);
+            $keys[] = $pieces[0];
+        }
+        $this->closeFile($filepointer);
+
+        return $keys;
     }
 
     /**
@@ -289,6 +359,14 @@ class FlintstoneDB
     {
         $path = $this->file;
 
+        if (!file_exists($path) && !@touch($path)) {
+            throw new FlintstoneException('Could not create file ' . $path);
+        } elseif (!is_readable($path)) {
+            throw new FlintstoneException('Could not read file ' . $path);
+        } elseif (!is_writable($path)) {
+            throw new FlintstoneException('Could not write to file ' . $path);
+        }
+
         if ($this->options['gzip'] === true) {
             $path = 'compress.zlib://' . $path;
         }
@@ -322,83 +400,13 @@ class FlintstoneDB
     }
 
     /**
-     * Get a key from the database
-     *
-     * @param string $key the key
-     *
-     * @return mixed the data
-     */
-    private function getKey($key)
-    {
-        $data = false;
-        if ($this->options['cache'] === true && array_key_exists($key, $this->cache)) {
-            return $this->cache[$key];
-        }
-
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
-            $pieces = explode("=", $line);
-            if ($pieces[0] != $key) {
-                continue;
-            }
-            $data = $pieces[1];
-            if (count($pieces) > 2) {
-                array_shift($pieces);
-                $data = implode("=", $pieces);
-            }
-            $data = unserialize($data);
-            $data = $this->preserveLines($data, true);
-            if ($this->options['cache'] === true) {
-                $this->cache[$key] = $data;
-            }
-            break;
-        }
-
-        $this->closeFile($filepointer);
-
-        return $data;
-    }
-
-    /**
-     * Replace a key in the database
-     *
-     * @param string $key  the key
-     * @param mixed  $data the data to store, or false to delete
-     *
-     * @return boolean successful replace
-     *
-     * @throws FlintstoneException when database cannot be written to
-     */
-    private function replaceKey($key, $data)
-    {
-        $tmp = new SplTempFileObject;
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
-            $line = $this->replaceLine($line, $key, $data);
-            if (empty($line)) {
-                continue;
-            }
-            $tmp->fwrite($line);
-        }
-        $this->closeFile($filepointer);
-        $tmp->rewind();
-
-        $filepointer = $this->openFile(self::FILE_WRITE);
-        foreach ($tmp as $line) {
-            $filepointer->fwrite($line."\n");
-        }
-        $tmp = null;
-        $this->closeFile($filepointer);
-
-        return true;
-    }
-
-    /**
      * serialize a data before saving
-     * @param  mixed  $data
+     *
+     * @param mixed $data
+     *
      * @return string
      */
-    private function formatData($data)
+    private function serializeData($data)
     {
         if ($data !== false) {
             return serialize($this->preserveLines($data, false));
@@ -418,7 +426,7 @@ class FlintstoneDB
      */
     private function replaceLine($line, $key, $data)
     {
-        $serializeData = $this->formatData($data);
+        $serializeData = $this->serializeData($data);
         $pieces = explode("=", $line);
         if ($pieces[0] == $key) {
             if (false === $serializeData) {
@@ -434,82 +442,26 @@ class FlintstoneDB
     }
 
     /**
-     * Set a key to store in the database
+     * Retrieve Data from a given line
      *
-     * @param string $key  the key
-     * @param mixed  $data the data to store
+     * @param string $line file line
+     * @param string $key  cache key
      *
-     * @throws FlintstoneException when database cannot be written to
-     *
-     * @return boolean
+     * @return string|boolean
      */
-    private function setKey($key, $data)
+    private function getDataFromLine($line, $key)
     {
-        if ($this->getKey($key) !== false) {
-            return $this->replaceKey($key, $data);
+        $pieces = explode("=", $line);
+        if ($pieces[0] != $key) {
+            return false;
+        }
+        $data = $pieces[1];
+        if (count($pieces) > 2) {
+            array_shift($pieces);
+            $data = implode("=", $pieces);
         }
 
-        if ($this->options['cache'] === true) {
-            $this->cache[$key] = $data;
-        }
-
-        $data = $this->formatData($data);
-        $line = "$key=$data\n";
-        $filepointer = $this->openFile(self::FILE_APPEND);
-        $filepointer->fwrite($line);
-        $this->closeFile($filepointer);
-
-        return true;
-    }
-
-    /**
-     * Delete a key from the database
-     *
-     * @param string $key the key
-     *
-     * @return boolean successful delete
-     */
-    private function deleteKey($key)
-    {
-        if ($this->getKey($key) !== false && $this->replaceKey($key, false)) {
-            unset($this->cache[$key]);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Flush the database
-     *
-     * @return boolean successful flush
-     */
-    private function flushDatabase()
-    {
-        $filepointer = $this->openFile(self::FILE_WRITE);
-        $this->closeFile($filepointer);
-        $this->cache = array();
-
-        return true;
-    }
-
-    /**
-     * Get all keys from the database
-     *
-     * @return array of keys
-     */
-    private function getAllKeys()
-    {
-        $keys = array();
-        $filepointer  = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
-            $pieces = explode("=", $line);
-            $keys[] = $pieces[0];
-        }
-        $this->closeFile($filepointer);
-
-        return $keys;
+        return $data;
     }
 
     /**
