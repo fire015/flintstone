@@ -17,7 +17,7 @@ class Flintstone
      * Flintstone version
      * @var string
      */
-    const VERSION = '1.5';
+    const VERSION = '1.7';
 
     /**
      * Static instance
