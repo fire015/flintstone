@@ -98,3 +98,7 @@ catch (FlintstoneException $e) {
 	echo 'An error occured: ' . $e->getMessage();
 }
 ```
+
+### Who is using Flintstone?
+
+- [Key-Value Store](https://github.com/adammbalogh/key-value-store)
