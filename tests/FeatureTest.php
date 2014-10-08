@@ -128,4 +128,20 @@ class FeatureTest extends TestFixture
         $this->assertEquals(3, count($keys));
         $this->assertContains('a', $keys);
     }
+
+    /**
+     * Test preserves keys between modification methods
+     */
+    public function testPreserveKeys()
+    {
+        $expected = array('name' => 'foo', 'age' => 'bar');
+        foreach (range(1, 5) as $i) {
+            $this->db->set('user'.$i, $expected);
+        }
+        $this->assertSame($expected, $this->db->get('user3'));
+        $this->db->replace('user3', 'toto');
+
+        $this->assertSame('toto', $this->db->get('user3'));
+        $this->assertSame($expected, $this->db->get('user2'));
+    }
 }

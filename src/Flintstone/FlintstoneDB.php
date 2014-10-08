@@ -252,7 +252,7 @@ class FlintstoneDB
 
         $filepointer = $this->openFile(self::FILE_WRITE);
         foreach ($tmp as $line) {
-            $filepointer->fwrite($line."\n");
+            $filepointer->fwrite($line);
         }
         $tmp = null;
         $this->closeFile($filepointer);
@@ -373,7 +373,9 @@ class FlintstoneDB
         $res  = $this->file_access_mode[$mode];
 
         $file = new SplFileObject($path, $res['mode']);
-        $file->setFlags(SplFileObject::DROP_NEW_LINE|SplFileObject::SKIP_EMPTY|SplFileObject::READ_AHEAD);
+        if (self::FILE_READ == $mode) {
+            $file->setFlags(SplFileObject::DROP_NEW_LINE|SplFileObject::SKIP_EMPTY|SplFileObject::READ_AHEAD);
+        }
         if (! $this->gzip_enabled && !$file->flock($res['operation'])) {
             throw new FlintstoneException('Could not lock file ' . $path);
         }
@@ -466,13 +468,13 @@ class FlintstoneDB
             if (false === $serializeData) {
                 return null;
             }
-            $line = "$key=$serializeData\n";
+            $line = "$key=$serializeData";
             if ($this->cache_enabled) {
                 $this->cache[$key] = $data;
             }
         }
 
-        return $line;
+        return $line."\n";
     }
 
     /**

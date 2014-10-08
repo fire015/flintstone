@@ -46,7 +46,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
 
     public function testInvalidDatabaseCreation()
     {
-        $dbh = Flintstone::load('foo', array(
+        $dbh = Flintstone::load($this->dbName, array(
             'dir' => __DIR__,
             'ext' => 'toto',
             'cache' => true,
@@ -122,8 +122,6 @@ class TestFixture extends \PHPUnit_Framework_TestCase
     {
         Flintstone::unload($this->dbName);
         @unlink($this->db->getFile());
-        @unlink(__DIR__.'/foo.dat');
-        @unlink(__DIR__.'/foo.toto.gz');
         clearstatcache();
     }
 }
