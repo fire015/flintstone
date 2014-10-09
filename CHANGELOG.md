@@ -1,5 +1,11 @@
 Change Log
 ==========
+### 09/10/2014 - 1.7
+* Moved from fopen to SplFileObject
+* Moved composer loader from PSR-0 to PSR-4
+* Code is now PSR-2 compliant
+* Added PHP 5.6 to travis
+
 ### 30/09/2014 - 1.6
 * Updated limits on valid characters in key name and size
 * Improved unit tests
@@ -21,7 +27,7 @@ Change Log
 * Removed the multibyte unserialize method as it seems to work without
 
 ### 22/06/2012 - 1.1
-* Added new method getKeys() to return an array of keys in the database (thanks to sinky)
+* Added new method getKeys() to return an array of keys in the database
 
 ### 17/06/2011 - 1.0
 * Initial release
