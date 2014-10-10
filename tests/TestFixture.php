@@ -43,8 +43,8 @@ class TestFixture extends \PHPUnit_Framework_TestCase
     public function testInvalidDatabaseDir()
     {
         Flintstone::load('blah', array(
-			'dir' => '/x/y/z'
-		));
+            'dir' => '/x/y/z'
+        ));
     }
 
     /**
@@ -95,7 +95,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
             'dir' => __DIR__,
             'cache' => true,
             'gzip' => true,
-			'swap_memory_limit' => 0
+            'swap_memory_limit' => 0
         ));
         $result->run($this);
 

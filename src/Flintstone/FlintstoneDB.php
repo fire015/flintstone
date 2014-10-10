@@ -101,11 +101,11 @@ class FlintstoneDB
     /**
      * Flintstone options:
      *
-     * - string		$dir				the directory to the database files
-     * - string		$ext				the database file extension
-     * - boolean	$gzip				use gzip to compress database
-     * - boolean	$cache				store get() results in memory
-     * - integer	$swap_memory_limit	write out each line to a temporary file and
+     * - string     $dir                the directory to the database files
+     * - string     $ext                the database file extension
+     * - boolean    $gzip               use gzip to compress database
+     * - boolean    $cache              store get() results in memory
+     * - integer    $swap_memory_limit  write out each line to a temporary file and
      *                                  swap if database is larger than limit (0 to always do this)
      *
      * @var array
@@ -115,7 +115,7 @@ class FlintstoneDB
         'ext' => '.dat',
         'gzip' => false,
         'cache' => true,
-		'formatter' => null,
+        'formatter' => null,
         'swap_memory_limit' => 1048576,
     );
 
@@ -161,7 +161,7 @@ class FlintstoneDB
             array('flags' => FILTER_FLAG_STRIP_LOW|FILTER_FLAG_STRIP_HIGH)
         );
 
-		$this->setFormatter($options['formatter']);
+        $this->setFormatter($options['formatter']);
         $this->setFile($dir, $database, $extension);
     }
 
@@ -344,23 +344,18 @@ class FlintstoneDB
      *
      * @return void
      */
-	private function setFormatter($formatter) {
-		if (!is_object($formatter))
-		{
-			$this->formatter = new Formatter\SerializeFormatter();
-		}
-		else
-		{
-			if ($formatter instanceof Formatter\FormatterInterface)
-			{
-				$this->formatter = $formatter;
-			}
-			else
-			{
-				throw new FlintstoneException('Formatter class does not implement Flintstone\\Formatter\\FormatterInterface');
-			}
-		}
-	}
+    private function setFormatter($formatter)
+    {
+        if (!is_object($formatter)) {
+            $this->formatter = new Formatter\SerializeFormatter();
+        } else {
+            if ($formatter instanceof Formatter\FormatterInterface) {
+                $this->formatter = $formatter;
+            } else {
+                throw new FlintstoneException('Formatter class does not implement Flintstone\\Formatter\\FormatterInterface');
+            }
+        }
+    }
 
     /**
      * Set the file
@@ -480,8 +475,7 @@ class FlintstoneDB
      */
     private function encodeData($data)
     {
-        if ($data !== false)
-		{
+        if ($data !== false) {
             return $this->formatter->encode($data);
         }
 
@@ -496,9 +490,9 @@ class FlintstoneDB
      * @return mixed the decoded data
      */
     private function decodeData($data)
-	{
-		return $this->formatter->decode($data);
-	}
+    {
+        return $this->formatter->decode($data);
+    }
 
     /**
      * update line content depending on the key and data
