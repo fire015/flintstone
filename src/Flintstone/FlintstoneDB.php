@@ -92,6 +92,13 @@ class FlintstoneDB
     private $swap_memory_limit;
 
     /**
+     * Formatter
+     *
+     * @var object
+     */
+    private $formatter;
+
+    /**
      * Flintstone options:
      *
      * - string		$dir				the directory to the database files
@@ -108,6 +115,7 @@ class FlintstoneDB
         'ext' => '.dat',
         'gzip' => false,
         'cache' => true,
+		'formatter' => null,
         'swap_memory_limit' => 1048576,
     );
 
@@ -153,6 +161,7 @@ class FlintstoneDB
             array('flags' => FILTER_FLAG_STRIP_LOW|FILTER_FLAG_STRIP_HIGH)
         );
 
+		$this->setFormatter($options['formatter']);
         $this->setFile($dir, $database, $extension);
     }
 
@@ -180,7 +189,7 @@ class FlintstoneDB
             if (false === $data) {
                 continue;
             }
-            $data = $this->preserveLines(unserialize($data), true);
+            $data = $this->decodeData($data);
             break;
         }
 
@@ -215,7 +224,7 @@ class FlintstoneDB
             $this->cache[$key] = $data;
         }
 
-        $data = $this->serializeData($data);
+        $data = $this->encodeData($data);
         $line = "$key=$data\n";
         $filepointer = $this->openFile(self::FILE_APPEND);
         $filepointer->fwrite($line);
@@ -327,6 +336,33 @@ class FlintstoneDB
     }
 
     /**
+     * Set the formatter used to encode/decode data
+     *
+     * @param object $formatter the formatter class
+     *
+     * @throws FlintstoneException when class does not implement Flintstone\Formatter\FormatterInterface
+     *
+     * @return void
+     */
+	private function setFormatter($formatter) {
+		if (!is_object($formatter))
+		{
+			$this->formatter = new Formatter\SerializeFormatter();
+		}
+		else
+		{
+			if ($formatter instanceof Formatter\FormatterInterface)
+			{
+				$this->formatter = $formatter;
+			}
+			else
+			{
+				throw new FlintstoneException('Formatter class does not implement Flintstone\\Formatter\\FormatterInterface');
+			}
+		}
+	}
+
+    /**
      * Set the file
      *
      * @param string $directory file directory
@@ -436,20 +472,33 @@ class FlintstoneDB
     }
 
     /**
-     * serialize a data before saving
+     * Encode data into a string
      *
-     * @param mixed $data
+     * @param mixed $data the data to encode
      *
-     * @return string
+     * @return string the encoded string or false
      */
-    private function serializeData($data)
+    private function encodeData($data)
     {
-        if ($data !== false) {
-            return serialize($this->preserveLines($data, false));
+        if ($data !== false)
+		{
+            return $this->formatter->encode($data);
         }
 
         return $data;
     }
+
+    /**
+     * Decode a string into data
+     *
+     * @param string $data the encoded string
+     *
+     * @return mixed the decoded data
+     */
+    private function decodeData($data)
+	{
+		return $this->formatter->decode($data);
+	}
 
     /**
      * update line content depending on the key and data
@@ -462,13 +511,13 @@ class FlintstoneDB
      */
     private function replaceLine($line, $key, $data)
     {
-        $serializeData = $this->serializeData($data);
+        $encodeData = $this->encodeData($data);
         $pieces = explode("=", $line);
         if ($pieces[0] == $key) {
-            if (false === $serializeData) {
+            if (false === $encodeData) {
                 return null;
             }
-            $line = "$key=$serializeData";
+            $line = "$key=$encodeData";
             if ($this->cache_enabled) {
                 $this->cache[$key] = $data;
             }
@@ -495,36 +544,6 @@ class FlintstoneDB
         if (count($pieces) > 2) {
             array_shift($pieces);
             $data = implode("=", $pieces);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Preserve new lines, recursive function
-     *
-     * @param mixed $data the data
-     *
-     * @param boolean $reverse to reverse the replacement order
-     *
-     * @return mixed the data
-     */
-    private function preserveLines($data, $reverse = false)
-    {
-        $search  = array("\n", "\r");
-        $replace = array("\\n", "\\r");
-        if ($reverse) {
-            $search  = array("\\n", "\\r");
-            $replace = array("\n", "\r");
-        }
-
-        if (is_string($data)) {
-            $data = str_replace($search, $replace, $data);
-        } elseif (is_array($data)) {
-            foreach ($data as &$value) {
-                $value = $this->preserveLines($value, $reverse);
-            }
-            unset($value);
         }
 
         return $data;

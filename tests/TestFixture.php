@@ -8,6 +8,7 @@ namespace Flinstone\tests;
 
 use Flintstone\Flintstone;
 use Flintstone\FlintstoneException;
+use Flintstone\Formatter\JsonFormatter;
 use PHPUnit_Framework_TestResult;
 
 class TestFixture extends \PHPUnit_Framework_TestCase
@@ -41,19 +42,21 @@ class TestFixture extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidDatabaseDir()
     {
-        Flintstone::load('blah', array('dir' => '/x/y/z'));
+        Flintstone::load('blah', array(
+			'dir' => '/x/y/z'
+		));
     }
 
-    public function testInvalidDatabaseCreation()
+    /**
+     * Test invalid formatter
+     * @expectedException Flintstone\FlintstoneException
+     */
+    public function testInvalidFormatter()
     {
-        $dbh = Flintstone::load($this->dbName, array(
-            'dir' => __DIR__,
-            'ext' => 'toto',
-            'cache' => true,
-            'gzip' => true
+        Flintstone::load('blah', array(
+            'dir'   => __DIR__,
+            'formatter' => new \stdClass()
         ));
-        $dbh->set('foo', 'bar');
-        $this->assertSame('bar', $dbh->get('foo'));
     }
 
     /**
@@ -71,44 +74,35 @@ class TestFixture extends \PHPUnit_Framework_TestCase
 
         // With no cache
         $this->db = Flintstone::load($this->dbName, array(
-            'dir'   => __DIR__,
+            'dir' => __DIR__,
             'cache' => false,
-            'gzip'  => false,
-            'ext'   => 'txt'
+            'gzip' => false,
+            'ext' => 'txt'
         ));
         $result->run($this);
 
-        // With gzip compression
+        // With no cache and gzip compression
         $this->db = Flintstone::load($this->dbName, array(
-            'dir'   => __DIR__,
+            'dir' => __DIR__,
             'cache' => false,
-            'gzip'  => true,
-            'ext'   => 'txt'
-        ));
-        $result->run($this);
-
-        // With gzip compression and no cache
-        $this->db = Flintstone::load($this->dbName, array(
-            'dir'   => __DIR__,
-            'cache' => false,
-            'gzip'  => true,
-            'swap_memory_limit' => 0
+            'gzip' => true,
+            'ext' => 'txt'
         ));
         $result->run($this);
 
         // With gzip compression and cache
         $this->db = Flintstone::load($this->dbName, array(
-            'dir'   => __DIR__,
+            'dir' => __DIR__,
             'cache' => true,
-            'gzip'  => true,
+            'gzip' => true,
+			'swap_memory_limit' => 0
         ));
-
         $result->run($this);
 
+        // With JSON formatter
         $this->db = Flintstone::load($this->dbName, array(
             'dir' => __DIR__,
-            'cache' => false,
-            'swap_memory_limit' => 0
+            'formatter' => new JsonFormatter()
         ));
         $result->run($this);
 
