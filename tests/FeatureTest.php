@@ -3,6 +3,7 @@
 /**
  * Flintstone Unit Tests
  */
+
 namespace Flinstone\tests;
 
 class FeatureTest extends TestFixture
@@ -17,6 +18,7 @@ class FeatureTest extends TestFixture
         $this->assertTrue($this->db->set('c', array(3, 4, 5)));
         $this->assertTrue($this->db->set('d', "some data == some new lines\r\n"));
         $this->assertSame($this->db->get('d'), "some data == some new lines\r\n");
+        $this->assertSame($this->db->get('c'), array(3, 4, 5));
     }
 
     /**

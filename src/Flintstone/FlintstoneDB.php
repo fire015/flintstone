@@ -186,11 +186,10 @@ class FlintstoneDB
         $filepointer = $this->openFile(self::FILE_READ);
         foreach ($filepointer as $line) {
             $data = $this->getDataFromLine($line, $key);
-            if (false === $data) {
-                continue;
+            if (false !== $data) {
+                $data = $this->decodeData($data);
+                break;
             }
-            $data = $this->decodeData($data);
-            break;
         }
 
         $this->closeFile($filepointer);
@@ -251,10 +250,9 @@ class FlintstoneDB
         $filepointer = $this->openFile(self::FILE_READ);
         foreach ($filepointer as $line) {
             $line = $this->replaceLine($line, $key, $data);
-            if (empty($line)) {
-                continue;
+            if (!empty($line)) {
+                $tmp->fwrite($line);
             }
-            $tmp->fwrite($line);
         }
         $this->closeFile($filepointer);
         $tmp->rewind();
@@ -521,7 +519,7 @@ class FlintstoneDB
     }
 
     /**
-     * Retrieve Data from a given line
+     * Retrieve data from a given line
      *
      * @param string $line file line
      * @param string $key  cache key

@@ -9,7 +9,6 @@ namespace Flinstone\tests;
 use Flintstone\Flintstone;
 use Flintstone\FlintstoneException;
 use Flintstone\Formatter\JsonFormatter;
-use PHPUnit_Framework_TestResult;
 
 class TestFixture extends \PHPUnit_Framework_TestCase
 {
@@ -60,9 +59,19 @@ class TestFixture extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test load method returns the same instance
+     */
+    public function testSameInstance()
+    {
+        $db = Flintstone::load($this->dbName, array('dir' => __DIR__));
+        $db2 = Flintstone::load($this->dbName, array('dir' => __DIR__));
+        $this->assertSame($db, $db2);
+    }
+
+    /**
      * Run the feature test multiple times with different options
      */
-    public function run(PHPUnit_Framework_TestResult $result = null)
+    public function run(\PHPUnit_Framework_TestResult $result = null)
     {
         if ($result === null) {
             $result = $this->createResult();
@@ -102,6 +111,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
         // With JSON formatter
         $this->db = Flintstone::load($this->dbName, array(
             'dir' => __DIR__,
+            'cache' => false,
             'formatter' => new JsonFormatter()
         ));
         $result->run($this);
