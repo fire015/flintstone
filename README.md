@@ -34,7 +34,7 @@ require 'vendor/autoload.php';
 
 use Flintstone\Flintstone;
 
-$users = Flintstone::load('users', $options);
+$users = Flintstone::load('users', array('dir' => __DIR__));
 ```
 
 ### Requirements
@@ -54,49 +54,60 @@ Flintstone can store the following data types:
 ### Usage examples
 
 ```php
-try {
+// Set options
+$options = array('dir' => '/path/to/database/dir/');
 
-	// Set options
-	$options = array('dir' => '/path/to/database/dir/');
+// Load the databases
+$users = Flintstone::load('users', $options);
+$settings = Flintstone::load('settings', $options);
 
-	// Load the databases
-	$users = Flintstone::load('users', $options);
-	$settings = Flintstone::load('settings', $options);
+// Set keys
+$users->set('bob', array('email' => 'bob@site.com', 'password' => '123456'));
+$users->set('joe', array('email' => 'joe@site.com', 'password' => 'test'));
+$settings->set('site_offline', 1);
+$settings->set('site_back', '3 days');
 
-	// Set keys
-	$users->set('bob', array('email' => 'bob@site.com', 'password' => '123456'));
-	$users->set('joe', array('email' => 'joe@site.com', 'password' => 'test'));
-	$settings->set('site_offline', 1);
-	$settings->set('site_back', '3 days');
+// Retrieve keys
+$user = $users->get('bob');
+echo 'Bob, your email is ' . $user['email'];
 
-	// Retrieve keys
-	$user = $users->get('bob');
-	echo 'Bob, your email is ' . $user['email'];
-
-	$offline = $settings->get('site_offline');
-	if ($offline == 1) {
-		echo 'Sorry, the website is offline<br />';
-		echo 'We will be back in ' . $settings->get('site_back');
-	}
-
-	// Retrieve all key names
-	$keys = $users->getKeys(); // returns array('bob', 'joe', ...)
-
-	foreach ($keys as $username) {
-		$user = $users->get($username);
-		echo $username.', your email is ' . $user['email'];
-		echo $username.', your password is ' . $user['password'];
-	}
-
-	// Delete a key
-	$users->delete('joe');
-
-	// Flush the database
-	$users->flush();
+$offline = $settings->get('site_offline');
+if ($offline == 1) {
+	echo 'Sorry, the website is offline<br />';
+	echo 'We will be back in ' . $settings->get('site_back');
 }
-catch (FlintstoneException $e) {
-	echo 'An error occured: ' . $e->getMessage();
+
+// Retrieve all key names
+$keys = $users->getKeys(); // returns array('bob', 'joe', ...)
+
+foreach ($keys as $username) {
+	$user = $users->get($username);
+	echo $username.', your email is ' . $user['email'];
+	echo $username.', your password is ' . $user['password'];
 }
+
+// Delete a key
+$users->delete('joe');
+
+// Flush the database
+$users->flush();
+```
+
+### Changing the formatter
+By default Flintstone will encode/decode data using PHP's serialize functions, however you can override this with your own class if you prefer.
+
+Just make sure it implements `Flintstone\Formatter\FormatterInterface` and then you can provide it as the `formatter` option.
+
+Flintstone ships with JSON as an optional formatter which you can use as in the example below:
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Flintstone\Flintstone;
+use Flintstone\Formatter\JsonFormatter;
+
+$users = Flintstone::load('users', array('dir' => __DIR__, 'formatter' => new JsonFormatter()));
 ```
 
 ### Who is using Flintstone?

@@ -1,5 +1,8 @@
 Change Log
 ==========
+### 15/10/2014 - 1.8
+* Added formatter option so that you can control how data is encoded/decoded (default is serialize but also ships with json)
+
 ### 09/10/2014 - 1.7
 * Moved from fopen to SplFileObject
 * Moved composer loader from PSR-0 to PSR-4
