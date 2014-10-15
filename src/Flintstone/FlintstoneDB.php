@@ -101,13 +101,12 @@ class FlintstoneDB
     /**
      * Flintstone options:
      *
-     * - string     $dir                the directory to the database files
-     * - string     $ext                the database file extension
-     * - boolean    $gzip               use gzip to compress database
+     * - string     $dir                the directory where the database files are stored
+     * - string     $ext                the database file extension to use
+     * - boolean    $gzip               use gzip to compress the database
      * - boolean    $cache              store get() results in memory
      * - object     $formatter          the formatter class used to encode/decode data
-     * - integer    $swap_memory_limit  write out each line to a temporary file and
-     *                                  swap if database is larger than limit (0 to always do this)
+     * - integer    $swap_memory_limit  amount of memory to use before writing to a temporary file
      *
      * @var array
      */

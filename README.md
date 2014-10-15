@@ -34,7 +34,7 @@ require 'vendor/autoload.php';
 
 use Flintstone\Flintstone;
 
-$users = Flintstone::load('users', array('dir' => __DIR__));
+$users = Flintstone::load('users', array('dir' => '/path/to/database/dir/'));
 ```
 
 ### Requirements
@@ -50,6 +50,18 @@ Flintstone can store the following data types:
 * Integers
 * Floats
 * Arrays
+
+### Options
+
+|Name				|Type		|Default Value	|Description														|
+|---				|---		|---					|---														|
+|dir				|string		|null					|the directory where the database files are stored			|
+|ext				|string		|.dat					|the database file extension to use							|
+|gzip				|boolean	|false					|use gzip to compress the database							|
+|cache				|boolean	|true					|store get() results in memory								|
+|formatter			|object		|SerializeFormatter		|the formatter class used to encode/decode data				|
+|swap_memory_limit	|integer	|1048576				|amount of memory to use before writing to a temporary file	|
+
 
 ### Usage examples
 
@@ -98,7 +110,7 @@ By default Flintstone will encode/decode data using PHP's serialize functions, h
 
 Just make sure it implements `Flintstone\Formatter\FormatterInterface` and then you can provide it as the `formatter` option.
 
-Flintstone ships with JSON as an optional formatter which you can use as in the example below:
+If you wish to use JSON as the formatter, Flintstone already ships with this as per the example below:
 
 ```php
 <?php
@@ -107,7 +119,10 @@ require 'vendor/autoload.php';
 use Flintstone\Flintstone;
 use Flintstone\Formatter\JsonFormatter;
 
-$users = Flintstone::load('users', array('dir' => __DIR__, 'formatter' => new JsonFormatter()));
+$users = Flintstone::load('users', array(
+	'dir' => __DIR__,
+	'formatter' => new JsonFormatter()
+));
 ```
 
 ### Who is using Flintstone?
