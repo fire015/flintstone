@@ -7,6 +7,8 @@
 
 namespace Flintstone;
 
+use Flintstone\Formatter\FormatterInterface;
+use Flintstone\Formatter\SerializeFormatter;
 use SplFileObject;
 use SplTempFileObject;
 
@@ -336,23 +338,13 @@ class FlintstoneDB
     /**
      * Set the formatter used to encode/decode data
      *
-     * @param object $formatter the formatter class
-     *
-     * @throws FlintstoneException when class does not implement Flintstone\Formatter\FormatterInterface
+     * @param \Flintstone\Formatter\FormatterInterface $formatter the formatter class
      *
      * @return void
      */
-    private function setFormatter($formatter)
+    private function setFormatter(FormatterInterface $formatter = null)
     {
-        if (!is_object($formatter)) {
-            $this->formatter = new Formatter\SerializeFormatter();
-        } else {
-            if ($formatter instanceof Formatter\FormatterInterface) {
-                $this->formatter = $formatter;
-            } else {
-                throw new FlintstoneException('Formatter class does not implement Flintstone\\Formatter\\FormatterInterface');
-            }
-        }
+        $this->formatter = $formatter ?: new Formatter\SerializeFormatter;
     }
 
     /**
