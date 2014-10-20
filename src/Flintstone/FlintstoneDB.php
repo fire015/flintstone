@@ -157,13 +157,16 @@ class FlintstoneDB
             $this->gzip_enabled = !$this->gzip_enabled;
         }
 
+        if (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
+            throw new FlintstoneException("Formatter must implement Flintstone\Formatter\FormatterInterface");
+        }
+        $this->formatter = $options['formatter'] ?: new Formatter\SerializeFormatter;
+
         $extension = filter_var(
             $options['ext'],
             FILTER_SANITIZE_STRING,
             array('flags' => FILTER_FLAG_STRIP_LOW|FILTER_FLAG_STRIP_HIGH)
         );
-
-        $this->setFormatter($options['formatter']);
         $this->setFile($dir, $database, $extension);
     }
 
@@ -333,18 +336,6 @@ class FlintstoneDB
     public function getFile()
     {
         return $this->file;
-    }
-
-    /**
-     * Set the formatter used to encode/decode data
-     *
-     * @param \Flintstone\Formatter\FormatterInterface $formatter the formatter class
-     *
-     * @return void
-     */
-    private function setFormatter(FormatterInterface $formatter = null)
-    {
-        $this->formatter = $formatter ?: new Formatter\SerializeFormatter;
     }
 
     /**
