@@ -7,6 +7,8 @@
 
 namespace Flintstone;
 
+use Flintstone\Formatter\FormatterInterface;
+use Flintstone\Formatter\SerializeFormatter;
 use SplFileObject;
 use SplTempFileObject;
 
@@ -155,13 +157,16 @@ class FlintstoneDB
             $this->gzip_enabled = !$this->gzip_enabled;
         }
 
+        if (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
+            throw new FlintstoneException("Formatter must implement Flintstone\Formatter\FormatterInterface");
+        }
+        $this->formatter = $options['formatter'] ?: new Formatter\SerializeFormatter;
+
         $extension = filter_var(
             $options['ext'],
             FILTER_SANITIZE_STRING,
             array('flags' => FILTER_FLAG_STRIP_LOW|FILTER_FLAG_STRIP_HIGH)
         );
-
-        $this->setFormatter($options['formatter']);
         $this->setFile($dir, $database, $extension);
     }
 
@@ -331,28 +336,6 @@ class FlintstoneDB
     public function getFile()
     {
         return $this->file;
-    }
-
-    /**
-     * Set the formatter used to encode/decode data
-     *
-     * @param object $formatter the formatter class
-     *
-     * @throws FlintstoneException when class does not implement Flintstone\Formatter\FormatterInterface
-     *
-     * @return void
-     */
-    private function setFormatter($formatter)
-    {
-        if (!is_object($formatter)) {
-            $this->formatter = new Formatter\SerializeFormatter();
-        } else {
-            if ($formatter instanceof Formatter\FormatterInterface) {
-                $this->formatter = $formatter;
-            } else {
-                throw new FlintstoneException('Formatter class does not implement Flintstone\\Formatter\\FormatterInterface');
-            }
-        }
     }
 
     /**

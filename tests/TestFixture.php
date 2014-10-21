@@ -9,6 +9,7 @@ namespace Flinstone\tests;
 use Flintstone\Flintstone;
 use Flintstone\FlintstoneException;
 use Flintstone\Formatter\JsonFormatter;
+use stdClass;
 
 class TestFixture extends \PHPUnit_Framework_TestCase
 {
@@ -54,7 +55,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
     {
         Flintstone::load('blah', array(
             'dir'   => __DIR__,
-            'formatter' => new \stdClass()
+            'formatter' => new stdClass
         ));
     }
 
@@ -63,9 +64,9 @@ class TestFixture extends \PHPUnit_Framework_TestCase
      */
     public function testSameInstance()
     {
-        $db = Flintstone::load($this->dbName, array('dir' => __DIR__));
+        $db1 = Flintstone::load($this->dbName, array('dir' => __DIR__));
         $db2 = Flintstone::load($this->dbName, array('dir' => __DIR__));
-        $this->assertSame($db, $db2);
+        $this->assertSame($db1, $db2);
     }
 
     /**
