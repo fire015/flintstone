@@ -143,7 +143,7 @@ class FlintstoneDB
     }
 
     /**
-     * Flintstone constructor
+     * Options setter
      *
      * @param array $options an array of options
      *
@@ -274,6 +274,11 @@ class FlintstoneDB
 
     /**
      * Replace a key in the database
+     *
+     * DEPRECATION WARNING! This method will be removed from the public API
+     * in the next major point release
+     *
+     * @deprecated deprecated since version 1.8
      *
      * @param string $key  the key
      * @param mixed  $data the data to store
