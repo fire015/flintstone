@@ -175,7 +175,7 @@ class FlintstoneDB
             $this->gzip_enabled = !$this->gzip_enabled;
         }
 
-        $this->file = $options['dir'].$options['database'].$this->setDatabaseExtension($options['ext']);
+        $this->file = $options['dir'].$options['database'].$this->formatExtension($options['ext']);
     }
 
     /**
@@ -185,7 +185,7 @@ class FlintstoneDB
      *
      * @return string
      */
-    private function setDatabaseExtension($ext)
+    private function formatExtension($ext)
     {
         $ext = filter_var(
             $ext,
