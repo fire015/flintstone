@@ -159,7 +159,7 @@ class FlintstoneDB
         } elseif (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
             throw new FlintstoneException("Formatter must implement Flintstone\Formatter\FormatterInterface");
         }
-        $this->formatter = $options['formatter'] ?: new Formatter\SerializeFormatter;
+        $this->formatter = $options['formatter'] ?: new SerializeFormatter;
 
         $this->swap_memory_limit = filter_var(
             $options['swap_memory_limit'],
