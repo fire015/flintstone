@@ -136,12 +136,30 @@ class FlintstoneDB
         if (! preg_match("/^[A-Za-z0-9_\-]+$/", $database)) {
             throw new FlintstoneException('Invalid characters in database name');
         }
-
         $options = array_merge($this->default_options, $options);
-        $dir = rtrim($options['dir'], '/\\') . DIRECTORY_SEPARATOR;
-        if (!is_dir($dir)) {
-            throw new FlintstoneException($dir.' is not a valid directory');
+        $options['database'] = $database;
+
+        $this->init($options);
+    }
+
+    /**
+     * Options setter
+     *
+     * @param array $options an array of options
+     *
+     * @throws FlintstoneException when using incorrect options values
+     *
+     * @return void
+     */
+    private function init(array $options)
+    {
+        $options['dir'] = rtrim($options['dir'], '/\\') . DIRECTORY_SEPARATOR;
+        if (!is_dir($options['dir'])) {
+            throw new FlintstoneException($options['dir'].' is not a valid directory');
+        } elseif (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
+            throw new FlintstoneException("Formatter must implement Flintstone\Formatter\FormatterInterface");
         }
+        $this->formatter = $options['formatter'] ?: new SerializeFormatter;
 
         $this->swap_memory_limit = filter_var(
             $options['swap_memory_limit'],
@@ -149,25 +167,40 @@ class FlintstoneDB
             array('options' => array('min_range' => 0, 'default' => $this->default_options['swap_memory_limit']))
         );
 
-        if ($options['cache'] !== $this->default_options['cache']) {
+        if ($options['cache'] != $this->default_options['cache']) {
             $this->cache_enabled = !$this->cache_enabled;
         }
 
-        if ($options['gzip'] !== $this->default_options['gzip']) {
+        if ($options['gzip'] != $this->default_options['gzip']) {
             $this->gzip_enabled = !$this->gzip_enabled;
         }
 
-        if (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
-            throw new FlintstoneException("Formatter must implement Flintstone\Formatter\FormatterInterface");
-        }
-        $this->formatter = $options['formatter'] ?: new Formatter\SerializeFormatter;
+        $this->file = $options['dir'].$options['database'].$this->formatExtension($options['ext']);
+    }
 
-        $extension = filter_var(
-            $options['ext'],
+    /**
+     * Format the file extension
+     *
+     * @param string $ext
+     *
+     * @return string
+     */
+    private function formatExtension($ext)
+    {
+        $ext = filter_var(
+            $ext,
             FILTER_SANITIZE_STRING,
             array('flags' => FILTER_FLAG_STRIP_LOW|FILTER_FLAG_STRIP_HIGH)
         );
-        $this->setFile($dir, $database, $extension);
+
+        if ("." != substr($ext, 0, 1)) {
+            $ext = ".".$ext;
+        }
+        if ($this->gzip_enabled && ".gz" != substr($ext, -3)) {
+            $ext .= ".gz";
+        }
+
+        return $ext;
     }
 
     /**
@@ -192,7 +225,7 @@ class FlintstoneDB
         foreach ($filepointer as $line) {
             $data = $this->getDataFromLine($line, $key);
             if (false !== $data) {
-                $data = $this->decodeData($data);
+                $data = $this->formatter->decode($data);
                 break;
             }
         }
@@ -228,7 +261,9 @@ class FlintstoneDB
             $this->cache[$key] = $data;
         }
 
-        $data = $this->encodeData($data);
+        if ($data !== false) {
+            $data = $this->formatter->encode($data);
+        }
         $line = "$key=$data\n";
         $filepointer = $this->openFile(self::FILE_APPEND);
         $filepointer->fwrite($line);
@@ -239,6 +274,11 @@ class FlintstoneDB
 
     /**
      * Replace a key in the database
+     *
+     * DEPRECATION WARNING! This method will be removed from the public API
+     * in the next major point release
+     *
+     * @deprecated deprecated since version 1.8
      *
      * @param string $key  the key
      * @param mixed  $data the data to store
@@ -339,26 +379,6 @@ class FlintstoneDB
     }
 
     /**
-     * Set the file
-     *
-     * @param string $directory file directory
-     * @param string $basename  file basename
-     * @param string $ext       file extension
-     *
-     */
-    private function setFile($directory, $basename, $ext)
-    {
-        if (substr($ext, 0, 1) !== ".") {
-            $ext = ".$ext";
-        }
-        if ($this->gzip_enabled && substr($ext, -3) !== ".gz") {
-            $ext .= ".gz";
-        }
-
-        $this->file = $directory.$basename.$ext;
-    }
-
-    /**
      * Open the database file
      *
      * @param integer $mode the file mode
@@ -382,7 +402,7 @@ class FlintstoneDB
         if ($this->gzip_enabled) {
             $path = 'compress.zlib://' . $path;
         }
-        $res  = $this->file_access_mode[$mode];
+        $res = $this->file_access_mode[$mode];
 
         $file = new SplFileObject($path, $res['mode']);
         if (self::FILE_READ == $mode) {
@@ -448,34 +468,6 @@ class FlintstoneDB
     }
 
     /**
-     * Encode data into a string
-     *
-     * @param mixed $data the data to encode
-     *
-     * @return string the encoded string or false
-     */
-    private function encodeData($data)
-    {
-        if ($data !== false) {
-            return $this->formatter->encode($data);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Decode a string into data
-     *
-     * @param string $data the encoded string
-     *
-     * @return mixed the decoded data
-     */
-    private function decodeData($data)
-    {
-        return $this->formatter->decode($data);
-    }
-
-    /**
      * update line content depending on the key and data
      *
      * @param string $line file line
@@ -486,7 +478,7 @@ class FlintstoneDB
      */
     private function replaceLine($line, $key, $data)
     {
-        $encodeData = $this->encodeData($data);
+        $encodeData = ($data !== false) ? $this->formatter->encode($data) : $data;
         $pieces = explode("=", $line);
         if ($pieces[0] == $key) {
             if (false === $encodeData) {
