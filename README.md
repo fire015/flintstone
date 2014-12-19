@@ -18,14 +18,10 @@ For full documentation please visit http://www.xeweb.net/flintstone/
 
 ### Installation
 
-The easiest way to install Flintstone is via [composer](http://getcomposer.org/). Create the following `composer.json` file and run the `php composer.phar install` command to install it.
+The easiest way to install Flintstone is via [composer](http://getcomposer.org/). Run the following command to install it.
 
-```json
-{
-    "require": {
-        "fire015/flintstone": "1.*"
-    }
-}
+```
+php composer.phar require fire015/flintstone
 ```
 
 ```php
