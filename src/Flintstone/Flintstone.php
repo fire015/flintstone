@@ -10,7 +10,6 @@ namespace Flintstone;
 /**
  * The Flintstone database loader
  */
-
 class Flintstone
 {
     /**
@@ -48,7 +47,6 @@ class Flintstone
      * Unload a database
      *
      * @param string $database the database name
-     *
      */
     public static function unload($database)
     {

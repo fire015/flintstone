@@ -10,8 +10,6 @@ namespace Flintstone;
 /**
  * Flintstone exception, just extends the main PHP exception class
  */
-
 class FlintstoneException extends \Exception
 {
-
 }

@@ -39,8 +39,7 @@ class SerializeFormatter implements FormatterInterface
     /**
      * Preserve new lines, recursive function
      *
-     * @param mixed $data the data
-     *
+     * @param mixed   $data    the data
      * @param boolean $reverse to reverse the replacement order
      *
      * @return mixed the data
