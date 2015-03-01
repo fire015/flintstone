@@ -131,7 +131,7 @@ class FlintstoneDB
      */
     public function __construct($database, array $options = array())
     {
-        if (! preg_match("/^[A-Za-z0-9_\-]+$/", $database)) {
+        if (! preg_match('/^[\w-]+$/', $database)) {
             throw new FlintstoneException('Invalid characters in database name');
         }
         $options = array_merge($this->default_options, $options);
