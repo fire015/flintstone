@@ -128,8 +128,6 @@ class FlintstoneDB
      * @param array  $options  an array of options
      *
      * @throws FlintstoneException when database cannot be loaded
-     *
-     * @return void
      */
     public function __construct($database, array $options = array())
     {
