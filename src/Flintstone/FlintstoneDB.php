@@ -219,8 +219,8 @@ class FlintstoneDB
             return $this->cache[$key];
         }
 
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
             $data = $this->getDataFromLine($line, $key);
             if (false !== $data) {
                 $data = $this->formatter->decode($data);
@@ -228,7 +228,7 @@ class FlintstoneDB
             }
         }
 
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
         if ($this->cache_enabled && false !== $data) {
             $this->cache[$key] = $data;
         }
@@ -263,9 +263,9 @@ class FlintstoneDB
             $data = $this->formatter->encode($data);
         }
         $line = "$key=$data\n";
-        $filepointer = $this->openFile(self::FILE_APPEND);
-        $filepointer->fwrite($line);
-        $this->closeFile($filepointer);
+        $filePointer = $this->openFile(self::FILE_APPEND);
+        $filePointer->fwrite($line);
+        $this->closeFile($filePointer);
 
         return true;
     }
@@ -290,22 +290,22 @@ class FlintstoneDB
         $key = $this->validateKey($key);
 
         $tmp = new SplTempFileObject($this->swap_memory_limit);
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
             $line = $this->replaceLine($line, $key, $data);
             if (!empty($line)) {
                 $tmp->fwrite($line);
             }
         }
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
         $tmp->rewind();
 
-        $filepointer = $this->openFile(self::FILE_WRITE);
+        $filePointer = $this->openFile(self::FILE_WRITE);
         foreach ($tmp as $line) {
-            $filepointer->fwrite($line);
+            $filePointer->fwrite($line);
         }
         $tmp = null;
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
 
         return true;
     }
@@ -339,8 +339,8 @@ class FlintstoneDB
      */
     public function flush()
     {
-        $filepointer = $this->openFile(self::FILE_WRITE);
-        $this->closeFile($filepointer);
+        $filePointer = $this->openFile(self::FILE_WRITE);
+        $this->closeFile($filePointer);
         $this->cache = array();
 
         return true;
@@ -356,12 +356,12 @@ class FlintstoneDB
     public function getKeys()
     {
         $keys = array();
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
             $pieces = explode("=", $line);
             $keys[] = $pieces[0];
         }
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
 
         return $keys;
     }
