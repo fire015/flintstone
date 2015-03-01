@@ -30,9 +30,9 @@ class Flintstone
      * @param string $database the database name
      * @param array  $options  an array of options
      *
-     * @return FlintstoneDB class
+     * @return \Flintstone\FlintstoneDB class
      *
-     * @throws FlintstoneException when database cannot be loaded
+     * @throws \Flintstone\FlintstoneException when database cannot be loaded
      */
     public static function load($database, array $options = array())
     {

@@ -7,7 +7,6 @@
 namespace Flinstone\tests;
 
 use Flintstone\Flintstone;
-use Flintstone\FlintstoneException;
 use Flintstone\Formatter\JsonFormatter;
 use stdClass;
 
@@ -29,7 +28,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
 
     /**
      * Test invalid database name
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
      */
     public function testInvalidDatabaseName()
     {
@@ -38,7 +37,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
 
     /**
      * Test invalid database directory
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
      */
     public function testInvalidDatabaseDir()
     {
@@ -49,7 +48,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
 
     /**
      * Test invalid formatter
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
      */
     public function testInvalidFormatter()
     {
@@ -71,6 +70,10 @@ class TestFixture extends \PHPUnit_Framework_TestCase
 
     /**
      * Run the feature test multiple times with different options
+     *
+     * @param \PHPUnit_Framework_TestResult $result
+     *
+     * @return \PHPUnit_Framework_TestResult
      */
     public function run(\PHPUnit_Framework_TestResult $result = null)
     {

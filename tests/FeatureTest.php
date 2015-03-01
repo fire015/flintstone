@@ -23,7 +23,7 @@ class FeatureTest extends TestFixture
 
     /**
      * Test 'set' operations
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
      */
     public function testSetException()
     {
@@ -32,7 +32,7 @@ class FeatureTest extends TestFixture
 
     /**
      * Test invalid key
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
      */
     public function testInvalidKey()
     {
@@ -41,7 +41,7 @@ class FeatureTest extends TestFixture
 
     /**
      * Test invalid character key
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
      */
     public function testInvalidChrKey()
     {
@@ -66,7 +66,7 @@ class FeatureTest extends TestFixture
 
     /**
      * Test huge key
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
      */
     public function testHugeKey()
     {

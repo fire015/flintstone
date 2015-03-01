@@ -127,7 +127,7 @@ class FlintstoneDB
      * @param string $database the database name
      * @param array  $options  an array of options
      *
-     * @throws FlintstoneException when database cannot be loaded
+     * @throws \Flintstone\FlintstoneException when database cannot be loaded
      */
     public function __construct($database, array $options = array())
     {
@@ -145,7 +145,7 @@ class FlintstoneDB
      *
      * @param array $options an array of options
      *
-     * @throws FlintstoneException when using incorrect options values
+     * @throws \Flintstone\FlintstoneException when using incorrect options values
      *
      * @return void
      */
@@ -155,7 +155,7 @@ class FlintstoneDB
         if (!is_dir($options['dir'])) {
             throw new FlintstoneException($options['dir'].' is not a valid directory');
         } elseif (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
-            throw new FlintstoneException("Formatter must implement Flintstone\Formatter\FormatterInterface");
+            throw new FlintstoneException("Formatter must implement \Flintstone\Formatter\FormatterInterface");
         }
         $this->formatter = $options['formatter'] ?: new SerializeFormatter;
 
@@ -206,7 +206,7 @@ class FlintstoneDB
      *
      * @param string $key the key
      *
-     * @throws FlintstoneException when key is invalid
+     * @throws \Flintstone\FlintstoneException when key is invalid
      *
      * @return mixed the data
      */
@@ -244,7 +244,7 @@ class FlintstoneDB
      *
      * @return boolean successful set
      *
-     * @throws FlintstoneException when key or data is invalid
+     * @throws \Flintstone\FlintstoneException when key or data is invalid
      */
     public function set($key, $data)
     {
@@ -281,7 +281,7 @@ class FlintstoneDB
      * @param string $key  the key
      * @param mixed  $data the data to store
      *
-     * @throws FlintstoneException when key or data is invalid
+     * @throws \Flintstone\FlintstoneException when key or data is invalid
      *
      * @return boolean successful replace
      */
@@ -315,7 +315,7 @@ class FlintstoneDB
      *
      * @param string $key the key
      *
-     * @throws FlintstoneException when key is invalid
+     * @throws \Flintstone\FlintstoneException when key is invalid
      *
      * @return boolean successful delete
      */
@@ -333,7 +333,7 @@ class FlintstoneDB
     /**
      * Flush the database
      *
-     * @throws FlintstoneException when something goes wrong
+     * @throws \Flintstone\FlintstoneException when something goes wrong
      *
      * @return boolean successful flush
      */
@@ -349,7 +349,7 @@ class FlintstoneDB
     /**
      * Get all keys from the database
      *
-     * @throws FlintstoneException when something goes wrong
+     * @throws \Flintstone\FlintstoneException when something goes wrong
      *
      * @return array list of keys
      */
@@ -381,7 +381,7 @@ class FlintstoneDB
      *
      * @param integer $mode the file mode
      *
-     * @throws FlintstoneException when database cannot be opened or locked
+     * @throws \Flintstone\FlintstoneException when database cannot be opened or locked
      *
      * @return \SplFileObject
      */
@@ -418,7 +418,7 @@ class FlintstoneDB
      *
      * @param object $file the file pointer
      *
-     * @throws FlintstoneException when database cannot be unlocked
+     * @throws \Flintstone\FlintstoneException when database cannot be unlocked
      *
      * @return void
      */
@@ -436,7 +436,7 @@ class FlintstoneDB
      *
      * @param string $key the key
      *
-     * @throws FlintstoneException when key is invalid
+     * @throws \Flintstone\FlintstoneException when key is invalid
      *
      * @return string
      */
@@ -458,7 +458,7 @@ class FlintstoneDB
      *
      * @param mixed $data the data
      *
-     * @throws FlintstoneException when data is invalid
+     * @throws \Flintstone\FlintstoneException when data is invalid
      */
     private function validateData($data)
     {
