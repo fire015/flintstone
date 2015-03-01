@@ -212,7 +212,7 @@ class FlintstoneDB
      */
     public function get($key)
     {
-        $key = $this->validateKey($key);
+        $this->validateKey($key);
 
         $data = false;
         if ($this->cache_enabled && array_key_exists($key, $this->cache)) {
@@ -249,7 +249,7 @@ class FlintstoneDB
     public function set($key, $data)
     {
         $this->validateData($data);
-        $key = $this->validateKey($key);
+        $this->validateKey($key);
 
         if ($this->get($key) !== false) {
             return $this->replace($key, $data);
@@ -287,7 +287,7 @@ class FlintstoneDB
      */
     public function replace($key, $data)
     {
-        $key = $this->validateKey($key);
+        $this->validateKey($key);
 
         $tmp = new SplTempFileObject($this->swap_memory_limit);
         $filePointer = $this->openFile(self::FILE_READ);
@@ -438,7 +438,7 @@ class FlintstoneDB
      *
      * @throws \Flintstone\FlintstoneException when key is invalid
      *
-     * @return string
+     * @return void
      */
     private function validateKey($key)
     {
@@ -449,8 +449,6 @@ class FlintstoneDB
         } elseif (strpos($key, '=') !== false) {
             throw new FlintstoneException('Key may not contain the equals character');
         }
-
-        return $key;
     }
 
     /**
