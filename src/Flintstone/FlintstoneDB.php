@@ -155,7 +155,7 @@ class FlintstoneDB
         if (!is_dir($options['dir'])) {
             throw new FlintstoneException($options['dir'].' is not a valid directory');
         } elseif (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
-            throw new FlintstoneException("Formatter must implement \Flintstone\Formatter\FormatterInterface");
+            throw new FlintstoneException('Formatter must implement \Flintstone\Formatter\FormatterInterface');
         }
         $this->formatter = $options['formatter'] ?: new SerializeFormatter;
 
