@@ -214,7 +214,7 @@ class FlintstoneDB
      */
     public function get($key)
     {
-        $key = $this->normalizeKey($key);
+        $key = $this->validateKey($key);
 
         $data = false;
         if ($this->cache_enabled && array_key_exists($key, $this->cache)) {
@@ -251,7 +251,7 @@ class FlintstoneDB
     public function set($key, $data)
     {
         $this->validateData($data);
-        $key = $this->normalizeKey($key);
+        $key = $this->validateKey($key);
 
         if ($this->get($key) !== false) {
             return $this->replace($key, $data);
@@ -289,7 +289,7 @@ class FlintstoneDB
      */
     public function replace($key, $data)
     {
-        $key = $this->normalizeKey($key);
+        $key = $this->validateKey($key);
 
         $tmp = new SplTempFileObject($this->swap_memory_limit);
         $filepointer = $this->openFile(self::FILE_READ);
@@ -434,16 +434,18 @@ class FlintstoneDB
     }
 
     /**
-     * Check the database has been loaded and valid key
+     * Validate the key
      *
      * @param string $key the key
      *
      * @throws FlintstoneException when key is invalid
+     *
+     * @return string
      */
-    private function normalizeKey($key)
+    private function validateKey($key)
     {
         if (! is_string($key)) {
-            throw new FlintstoneException('Key must be an string');
+            throw new FlintstoneException('Key must be a string');
         } elseif (strlen($key) > 1024) {
             throw new FlintstoneException('Maximum key length is 1024 characters');
         } elseif (strpos($key, '=') !== false) {
