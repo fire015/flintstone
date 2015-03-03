@@ -127,13 +127,11 @@ class FlintstoneDB
      * @param string $database the database name
      * @param array  $options  an array of options
      *
-     * @throws FlintstoneException when database cannot be loaded
-     *
-     * @return void
+     * @throws \Flintstone\FlintstoneException when database cannot be loaded
      */
     public function __construct($database, array $options = array())
     {
-        if (! preg_match("/^[A-Za-z0-9_\-]+$/", $database)) {
+        if (! preg_match('/^[\w-]+$/', $database)) {
             throw new FlintstoneException('Invalid characters in database name');
         }
         $options = array_merge($this->default_options, $options);
@@ -147,7 +145,7 @@ class FlintstoneDB
      *
      * @param array $options an array of options
      *
-     * @throws FlintstoneException when using incorrect options values
+     * @throws \Flintstone\FlintstoneException when using incorrect options values
      *
      * @return void
      */
@@ -157,7 +155,7 @@ class FlintstoneDB
         if (!is_dir($options['dir'])) {
             throw new FlintstoneException($options['dir'].' is not a valid directory');
         } elseif (! is_null($options['formatter']) && ! $options['formatter'] instanceof FormatterInterface) {
-            throw new FlintstoneException("Formatter must implement Flintstone\Formatter\FormatterInterface");
+            throw new FlintstoneException('Formatter must implement \Flintstone\Formatter\FormatterInterface');
         }
         $this->formatter = $options['formatter'] ?: new SerializeFormatter;
 
@@ -208,21 +206,21 @@ class FlintstoneDB
      *
      * @param string $key the key
      *
-     * @throws FlintstoneException when key is invalid
+     * @throws \Flintstone\FlintstoneException when key is invalid
      *
      * @return mixed the data
      */
     public function get($key)
     {
-        $key = $this->normalizeKey($key);
+        $this->validateKey($key);
 
         $data = false;
         if ($this->cache_enabled && array_key_exists($key, $this->cache)) {
             return $this->cache[$key];
         }
 
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
             $data = $this->getDataFromLine($line, $key);
             if (false !== $data) {
                 $data = $this->formatter->decode($data);
@@ -230,7 +228,7 @@ class FlintstoneDB
             }
         }
 
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
         if ($this->cache_enabled && false !== $data) {
             $this->cache[$key] = $data;
         }
@@ -246,12 +244,12 @@ class FlintstoneDB
      *
      * @return boolean successful set
      *
-     * @throws FlintstoneException when key or data is invalid
+     * @throws \Flintstone\FlintstoneException when key or data is invalid
      */
     public function set($key, $data)
     {
         $this->validateData($data);
-        $key = $this->normalizeKey($key);
+        $this->validateKey($key);
 
         if ($this->get($key) !== false) {
             return $this->replace($key, $data);
@@ -265,9 +263,9 @@ class FlintstoneDB
             $data = $this->formatter->encode($data);
         }
         $line = "$key=$data\n";
-        $filepointer = $this->openFile(self::FILE_APPEND);
-        $filepointer->fwrite($line);
-        $this->closeFile($filepointer);
+        $filePointer = $this->openFile(self::FILE_APPEND);
+        $filePointer->fwrite($line);
+        $this->closeFile($filePointer);
 
         return true;
     }
@@ -283,31 +281,31 @@ class FlintstoneDB
      * @param string $key  the key
      * @param mixed  $data the data to store
      *
-     * @throws FlintstoneException when key or data is invalid
+     * @throws \Flintstone\FlintstoneException when key or data is invalid
      *
      * @return boolean successful replace
      */
     public function replace($key, $data)
     {
-        $key = $this->normalizeKey($key);
+        $this->validateKey($key);
 
         $tmp = new SplTempFileObject($this->swap_memory_limit);
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
             $line = $this->replaceLine($line, $key, $data);
             if (!empty($line)) {
                 $tmp->fwrite($line);
             }
         }
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
         $tmp->rewind();
 
-        $filepointer = $this->openFile(self::FILE_WRITE);
+        $filePointer = $this->openFile(self::FILE_WRITE);
         foreach ($tmp as $line) {
-            $filepointer->fwrite($line);
+            $filePointer->fwrite($line);
         }
         $tmp = null;
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
 
         return true;
     }
@@ -317,7 +315,7 @@ class FlintstoneDB
      *
      * @param string $key the key
      *
-     * @throws FlintstoneException when key is invalid
+     * @throws \Flintstone\FlintstoneException when key is invalid
      *
      * @return boolean successful delete
      */
@@ -335,14 +333,14 @@ class FlintstoneDB
     /**
      * Flush the database
      *
-     * @throws FlintstoneException when something goes wrong
+     * @throws \Flintstone\FlintstoneException when something goes wrong
      *
      * @return boolean successful flush
      */
     public function flush()
     {
-        $filepointer = $this->openFile(self::FILE_WRITE);
-        $this->closeFile($filepointer);
+        $filePointer = $this->openFile(self::FILE_WRITE);
+        $this->closeFile($filePointer);
         $this->cache = array();
 
         return true;
@@ -351,19 +349,19 @@ class FlintstoneDB
     /**
      * Get all keys from the database
      *
-     * @throws FlintstoneException when something goes wrong
+     * @throws \Flintstone\FlintstoneException when something goes wrong
      *
      * @return array list of keys
      */
     public function getKeys()
     {
         $keys = array();
-        $filepointer = $this->openFile(self::FILE_READ);
-        foreach ($filepointer as $line) {
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
             $pieces = explode("=", $line);
             $keys[] = $pieces[0];
         }
-        $this->closeFile($filepointer);
+        $this->closeFile($filePointer);
 
         return $keys;
     }
@@ -383,7 +381,7 @@ class FlintstoneDB
      *
      * @param integer $mode the file mode
      *
-     * @throws FlintstoneException when database cannot be opened or locked
+     * @throws \Flintstone\FlintstoneException when database cannot be opened or locked
      *
      * @return \SplFileObject
      */
@@ -420,7 +418,7 @@ class FlintstoneDB
      *
      * @param object $file the file pointer
      *
-     * @throws FlintstoneException when database cannot be unlocked
+     * @throws \Flintstone\FlintstoneException when database cannot be unlocked
      *
      * @return void
      */
@@ -434,23 +432,23 @@ class FlintstoneDB
     }
 
     /**
-     * Check the database has been loaded and valid key
+     * Validate the key
      *
      * @param string $key the key
      *
-     * @throws FlintstoneException when key is invalid
+     * @throws \Flintstone\FlintstoneException when key is invalid
+     *
+     * @return void
      */
-    private function normalizeKey($key)
+    private function validateKey($key)
     {
         if (! is_string($key)) {
-            throw new FlintstoneException('Key must be an string');
+            throw new FlintstoneException('Key must be a string');
         } elseif (strlen($key) > 1024) {
             throw new FlintstoneException('Maximum key length is 1024 characters');
         } elseif (strpos($key, '=') !== false) {
             throw new FlintstoneException('Key may not contain the equals character');
         }
-
-        return $key;
     }
 
     /**
@@ -458,7 +456,7 @@ class FlintstoneDB
      *
      * @param mixed $data the data
      *
-     * @throws FlintstoneException when data is invalid
+     * @throws \Flintstone\FlintstoneException when data is invalid
      */
     private function validateData($data)
     {

@@ -13,11 +13,7 @@ namespace Flintstone\Formatter;
 class SerializeFormatter implements FormatterInterface
 {
     /**
-     * Encode data into a string
-     *
-     * @param mixed $data the data to encode
-     *
-     * @return string the encoded string
+     * {@inheritdoc}
      */
     public function encode($data)
     {
@@ -25,11 +21,7 @@ class SerializeFormatter implements FormatterInterface
     }
 
     /**
-     * Decode a string into data
-     *
-     * @param string $data the encoded string
-     *
-     * @return mixed the decoded data
+     * {@inheritdoc}
      */
     public function decode($data)
     {
@@ -39,8 +31,7 @@ class SerializeFormatter implements FormatterInterface
     /**
      * Preserve new lines, recursive function
      *
-     * @param mixed $data the data
-     *
+     * @param mixed   $data    the data
      * @param boolean $reverse to reverse the replacement order
      *
      * @return mixed the data

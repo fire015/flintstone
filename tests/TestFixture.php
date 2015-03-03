@@ -7,7 +7,6 @@
 namespace Flinstone\tests;
 
 use Flintstone\Flintstone;
-use Flintstone\FlintstoneException;
 use Flintstone\Formatter\JsonFormatter;
 use stdClass;
 
@@ -28,19 +27,19 @@ class TestFixture extends \PHPUnit_Framework_TestCase
     protected $dbName = 'test';
 
     /**
-     * Test invalid database name
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
+     * @expectedExceptionMessage Invalid characters in database name
      */
-    public function testInvalidDatabaseName()
+    public function testThrowsExceptionIfDatabaseNameIsInvalid()
     {
         Flintstone::load('test!123');
     }
 
     /**
-     * Test invalid database directory
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
+     * @expectedExceptionMessage /x/y/z/ is not a valid directory
      */
-    public function testInvalidDatabaseDir()
+    public function testThrowsExceptionIfDatabaseDirectoryIsInvalid()
     {
         Flintstone::load('blah', array(
             'dir' => '/x/y/z'
@@ -48,10 +47,10 @@ class TestFixture extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test invalid formatter
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
+     * @expectedExceptionMessage Formatter must implement \Flintstone\Formatter\FormatterInterface
      */
-    public function testInvalidFormatter()
+    public function testThrowsExceptionIfFormatterIsInvalid()
     {
         Flintstone::load('blah', array(
             'dir'   => __DIR__,
@@ -59,10 +58,7 @@ class TestFixture extends \PHPUnit_Framework_TestCase
         ));
     }
 
-    /**
-     * Test load method returns the same instance
-     */
-    public function testSameInstance()
+    public function testLoadMethodReturnsTheSameInstance()
     {
         $db1 = Flintstone::load($this->dbName, array('dir' => __DIR__));
         $db2 = Flintstone::load($this->dbName, array('dir' => __DIR__));
@@ -71,6 +67,10 @@ class TestFixture extends \PHPUnit_Framework_TestCase
 
     /**
      * Run the feature test multiple times with different options
+     *
+     * @param \PHPUnit_Framework_TestResult $result
+     *
+     * @return \PHPUnit_Framework_TestResult
      */
     public function run(\PHPUnit_Framework_TestResult $result = null)
     {

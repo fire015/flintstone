@@ -8,10 +8,7 @@ namespace Flinstone\tests;
 
 class FeatureTest extends TestFixture
 {
-    /**
-     * Test 'set' operations
-     */
-    public function testSet()
+    public function testSetOperationsAcceptValidValues()
     {
         $this->assertTrue($this->db->set('a', '1'));
         $this->assertTrue($this->db->set('b', 2));
@@ -22,61 +19,52 @@ class FeatureTest extends TestFixture
     }
 
     /**
-     * Test 'set' operations
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
+     * @expectedExceptionMessage Invalid data type
      */
-    public function testSetException()
+    public function testThrowsExceptionWhenStoringABooleanValue()
     {
         $this->db->set('d', false);
     }
 
     /**
-     * Test invalid key
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
+     * @expectedExceptionMessage Key must be a string
      */
-    public function testInvalidKey()
+    public function testThrowsExceptionWhenKeyIsAnInteger()
     {
         $this->db->get(1);
     }
 
     /**
-     * Test invalid character key
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
+     * @expectedExceptionMessage Key may not contain the equals character
      */
-    public function testInvalidChrKey()
+    public function testThrowsExceptionWhenKeyContainsEqualsCharacter()
     {
         $this->db->get('a=b');
     }
 
-    /**
-     * Test blank key
-     */
-    public function testBlankKey()
+    public function testEmptyStringIsAValidKey()
     {
         $this->assertFalse($this->db->get(''));
     }
 
-    /**
-     * Test complex key
-    */
-    public function testComplexKey()
+    public function testAcceptsComplexKey()
     {
         $this->assertFalse($this->db->get('users:1:name'));
     }
 
     /**
-     * Test huge key
-     * @expectedException Flintstone\FlintstoneException
+     * @expectedException \Flintstone\FlintstoneException
+     * @expectedExceptionMessage Maximum key length is 1024 characters
      */
-    public function testHugeKey()
+    public function testThrowsExceptionIfKeyExceedsMaxLength()
     {
         $this->db->get(str_repeat('a', 2048));
     }
 
-    /**
-     * Test 'replace' operations
-     */
-    public function testReplace()
+    public function testReplaceOperationReplacesOriginalValue()
     {
         $this->assertTrue($this->db->set('a', '1'));
         $this->assertTrue($this->db->replace('a', '2'));
@@ -85,20 +73,14 @@ class FeatureTest extends TestFixture
         $this->assertSame($this->db->get('a'), '1');
     }
 
-    /**
-     * Test 'get' operations
-     */
-    public function testGet()
+    public function testGetOperationReturnsCorrectValues()
     {
         $this->assertFalse($this->db->get('a'));
         $this->assertTrue($this->db->set('a', '1'));
         $this->assertSame($this->db->get('a'), '1');
     }
 
-    /**
-     * Test 'delete' operations
-     */
-    public function testDelete()
+    public function testDeleteOperationRemovesAValue()
     {
         $this->assertFalse($this->db->delete('a'));
         $this->assertTrue($this->db->set('a', '1'));
@@ -106,34 +88,25 @@ class FeatureTest extends TestFixture
         $this->assertFalse($this->db->get('a'));
     }
 
-    /**
-     * Test 'flush' operations
-     */
-    public function testFlush()
+    public function testFlushEmptiesTheDatabase()
     {
         $this->assertTrue($this->db->set('a', '1'));
         $this->assertTrue($this->db->set('b', 2));
         $this->assertTrue($this->db->flush());
         $keys = $this->db->getKeys();
-        $this->assertEquals(0, count($keys));
+        $this->assertCount(0, $keys);
     }
 
-    /**
-     * Test 'getKeys' operations
-     */
-    public function testGetKeys()
+    public function testGetKeysReturnsAllKeys()
     {
         $this->assertTrue($this->db->set('a', '1'));
         $this->assertTrue($this->db->set('b', 2));
         $this->assertTrue($this->db->set('c', array(3, 4, 5)));
         $keys = $this->db->getKeys();
-        $this->assertEquals(3, count($keys));
+        $this->assertCount(3, $keys);
         $this->assertContains('a', $keys);
     }
 
-    /**
-     * Test preserves keys between modification methods
-     */
     public function testPreserveKeys()
     {
         $expected = array('name' => 'foo', 'age' => 'bar');
