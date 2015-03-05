@@ -367,6 +367,26 @@ class FlintstoneDB
     }
 
     /**
+     * Get all data from the database
+     *
+     * @throws \Flintstone\FlintstoneException when something goes wrong
+     *
+     * @return array list key => value data in DB
+     */
+    public function getAll()
+    {
+        $data = array();
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
+            $pieces = explode("=", $line);
+            $data[$pieces[0]] = $this->formatter->decode($pieces[1]);
+        }
+        $this->closeFile($filePointer);
+
+        return $data;
+    }
+
+    /**
      * Get the database file
      *
      * @return string file path
