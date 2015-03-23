@@ -378,7 +378,7 @@ class FlintstoneDB
         $data = array();
         $filePointer = $this->openFile(self::FILE_READ);
         foreach ($filePointer as $line) {
-            $pieces = explode("=", $line);
+            $pieces = explode("=", $line, 2);
             $data[$pieces[0]] = $this->formatter->decode($pieces[1]);
         }
         $this->closeFile($filePointer);
