@@ -112,11 +112,13 @@ class FeatureTest extends TestFixture
         $this->assertTrue($this->db->set('a', '1'));
         $this->assertTrue($this->db->set('b', 2));
         $this->assertTrue($this->db->set('c', array(3, 4, 5)));
+        $this->assertTrue($this->db->set('d', 'foo=baz=bar'));
         $data = $this->db->getAll();
         $expected = array(
             'a' => '1',
             'b' => 2,
             'c' => array(3, 4, 5),
+            'd' => 'foo=baz=bar',
         );
         $this->assertEquals($expected, $data);
     }

@@ -521,16 +521,7 @@ class FlintstoneDB
      */
     private function getDataFromLine($line, $key)
     {
-        $pieces = explode("=", $line);
-        if ($pieces[0] != $key) {
-            return false;
-        }
-        $data = $pieces[1];
-        if (count($pieces) > 2) {
-            array_shift($pieces);
-            $data = implode("=", $pieces);
-        }
-
-        return $data;
+        $pieces = explode("=", $line, 2);
+        return $pieces[0] == $key ? $pieces[1] : false;
     }
 }
