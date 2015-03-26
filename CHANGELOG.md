@@ -1,5 +1,8 @@
 Change Log
 ==========
+### 25/03/2015 - 1.9
+* Added `getAll` method and some refactoring
+
 ### 15/10/2014 - 1.8
 * Added formatter option so that you can control how data is encoded/decoded (default is serialize but also ships with json)
 
