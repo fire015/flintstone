@@ -480,7 +480,7 @@ class FlintstoneDB
      */
     private function validateData($data)
     {
-        if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data) && !is_object($data)) {
+        if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
             throw new FlintstoneException('Invalid data type');
         }
     }
