@@ -46,6 +46,7 @@ Flintstone can store the following data types:
 * Integers
 * Floats
 * Arrays
+* Objects
 
 ### Options
 

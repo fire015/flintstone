@@ -1,5 +1,8 @@
 Change Log
 ==========
+### 28/03/2015 - 1.10
+* Removed restriction on storing Objects as base record datatype.
+
 ### 25/03/2015 - 1.9
 * Added `getAll` method and some refactoring
 
