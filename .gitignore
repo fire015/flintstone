@@ -2,4 +2,4 @@ vendor
 composer.lock
 docs
 build
-/nbproject/private/
+nbproject
