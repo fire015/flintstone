@@ -2,13 +2,12 @@
 
 /**
  * Flintstone - A key/value database store using flat files for PHP
- * Copyright (c) 2014 Jason M
+ * Copyright (c) 2014 Jason M.
  */
-
 namespace Flintstone\Formatter;
 
 /**
- * Encodes/decodes data into a native PHP stored representation
+ * Encodes/decodes data into a native PHP stored representation.
  */
 class SerializeFormatter implements FormatterInterface
 {
@@ -29,19 +28,19 @@ class SerializeFormatter implements FormatterInterface
     }
 
     /**
-     * Preserve new lines, recursive function
+     * Preserve new lines, recursive function.
      *
-     * @param mixed   $data    the data
-     * @param boolean $reverse to reverse the replacement order
+     * @param mixed $data    the data
+     * @param bool  $reverse to reverse the replacement order
      *
      * @return mixed the data
      */
     private function preserveLines($data, $reverse)
     {
-        $search  = array("\n", "\r");
-        $replace = array("\\n", "\\r");
+        $search = array("\n", "\r");
+        $replace = array('\\n', '\\r');
         if ($reverse) {
-            $search  = array("\\n", "\\r");
+            $search = array('\\n', '\\r');
             $replace = array("\n", "\r");
         }
 

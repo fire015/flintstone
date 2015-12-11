@@ -2,13 +2,12 @@
 
 /**
  * Flintstone - A key/value database store using flat files for PHP
- * Copyright (c) 2014 Jason M
+ * Copyright (c) 2014 Jason M.
  */
-
 namespace Flintstone\Formatter;
 
 /**
- * Encodes/decodes data into JSON
+ * Encodes/decodes data into JSON.
  */
 class JsonFormatter implements FormatterInterface
 {
