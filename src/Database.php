@@ -38,7 +38,7 @@ class Database
     const FILE_APPEND = 3;
 
     /**
-     * File access mode
+     * File access mode.
      *
      * @var array
      */
@@ -57,115 +57,115 @@ class Database
         ),
     );
 
-	/**
-	 * Database name
-	 *
-	 * @var string
-	 */
-	protected $name;
+    /**
+     * Database name.
+     *
+     * @var string
+     */
+    protected $name;
 
-	/**
-	 * Config class
-	 *
-	 * @var Config
-	 */
-	protected $config;
+    /**
+     * Config class.
+     *
+     * @var Config
+     */
+    protected $config;
 
-	/**
-	 * Constructor
-	 *
-	 * @param string $name
-	 * @param Config|null $config
-	 */
-	public function __construct($name, Config $config = null)
-	{
-		$this->setName($name);
+    /**
+     * Constructor.
+     *
+     * @param string      $name
+     * @param Config|null $config
+     */
+    public function __construct($name, Config $config = null)
+    {
+        $this->setName($name);
 
-		if ($config) {
-			$this->setConfig($config);
-		}
-	}
+        if ($config) {
+            $this->setConfig($config);
+        }
+    }
 
-	/**
-	 * Get the database name
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return $this->name;
-	}
+    /**
+     * Get the database name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
 
-	/**
-	 * Set the database name
-	 *
-	 * @param string $name
-	 *
-	 * @throws Exception
-	 */
-	public function setName($name)
-	{
-		if (empty($name) || !preg_match('/^[\w-]+$/', $name)) {
-			throw new Exception('Invalid characters in database name');
-		}
+    /**
+     * Set the database name.
+     *
+     * @param string $name
+     *
+     * @throws Exception
+     */
+    public function setName($name)
+    {
+        if (empty($name) || !preg_match('/^[\w-]+$/', $name)) {
+            throw new Exception('Invalid characters in database name');
+        }
 
-		$this->name = $name;
-	}
+        $this->name = $name;
+    }
 
-	/**
-	 * Get the config
-	 *
-	 * @return Config
-	 */
-	public function getConfig()
-	{
-		return $this->config;
-	}
+    /**
+     * Get the config.
+     *
+     * @return Config
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
 
-	/**
-	 * Set the config
-	 *
-	 * @param Config $config
-	 */
-	public function setConfig(Config $config)
-	{
-		$this->config = $config;
-	}
+    /**
+     * Set the config.
+     *
+     * @param Config $config
+     */
+    public function setConfig(Config $config)
+    {
+        $this->config = $config;
+    }
 
-	/**
-	 * Get the path to the database file
-	 *
-	 * @return string
-	 */
-	public function getPath()
-	{
-		return $this->config->getDir() . $this->getName() . $this->config->getExt();
-	}
+    /**
+     * Get the path to the database file.
+     *
+     * @return string
+     */
+    public function getPath()
+    {
+        return $this->config->getDir().$this->getName().$this->config->getExt();
+    }
 
     /**
      * Open the database file.
      *
-     * @param integer $mode
+     * @param int $mode
      *
      * @throws Exception
      *
      * @return SplFileObject
      */
-	public function openFile($mode)
-	{
-		$path = $this->getPath();
+    public function openFile($mode)
+    {
+        $path = $this->getPath();
 
-		if (!is_file($path) && !@touch($path)) {
-			throw new Exception('Could not create file: ' . $path);
-		}
+        if (!is_file($path) && !@touch($path)) {
+            throw new Exception('Could not create file: '.$path);
+        }
 
-		if (!is_readable($path) || !is_writable($path)) {
-			throw new Exception('File does not have permission for read and write: ' . $path);
-		}
+        if (!is_readable($path) || !is_writable($path)) {
+            throw new Exception('File does not have permission for read and write: '.$path);
+        }
 
-		if ($this->getConfig()->useGzip()) {
-			$path = 'compress.zlib://'.$path;
-		}
+        if ($this->getConfig()->useGzip()) {
+            $path = 'compress.zlib://'.$path;
+        }
 
         $res = $this->fileAccessMode[$mode];
         $file = new SplFileObject($path, $res['mode']);
@@ -179,17 +179,17 @@ class Database
         }
 
         return $file;
-	}
+    }
 
-	/**
-	 * Open a temporary file
-	 *
-	 * @return SplTempFileObject
-	 */
-	public function openTempFile()
-	{
-		return new SplTempFileObject($this->getConfig()->getSwapMemoryLimit());
-	}
+    /**
+     * Open a temporary file.
+     *
+     * @return SplTempFileObject
+     */
+    public function openTempFile()
+    {
+        return new SplTempFileObject($this->getConfig()->getSwapMemoryLimit());
+    }
 
     /**
      * Close the database file.
@@ -200,11 +200,11 @@ class Database
      */
     public function closeFile(SplFileObject $file)
     {
-		if (!$this->getConfig()->useGzip() && !$file->flock(LOCK_UN)) {
-			$file = null;
-			throw new Exception('Could not unlock file');
-		}
+        if (!$this->getConfig()->useGzip() && !$file->flock(LOCK_UN)) {
+            $file = null;
+            throw new Exception('Could not unlock file');
+        }
 
-		$file = null;
+        $file = null;
     }
 }

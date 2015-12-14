@@ -1,31 +1,33 @@
 <?php
 
-/**
- * Flintstone - A key/value database store using flat files for PHP
- * Copyright (c) 2014 Jason M.
+/*
+ * This file is part of the Flintstone package.
+ *
+ * (c) Jason M <emailfire@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
  */
+
 namespace Flintstone\Formatter;
 
-/**
- * Interface for formatters.
- */
 interface FormatterInterface
 {
     /**
      * Encode data into a string.
      *
-     * @param mixed $data the data to encode
+     * @param mixed $data
      *
-     * @return string the encoded string
+     * @return string
      */
     public function encode($data);
 
     /**
      * Decode a string into data.
      *
-     * @param string $data the encoded string
+     * @param string $data
      *
-     * @return mixed the decoded data
+     * @return mixed
      */
     public function decode($data);
 }

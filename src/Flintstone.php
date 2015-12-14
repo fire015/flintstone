@@ -13,87 +13,87 @@ namespace Flintstone;
 
 class Flintstone
 {
-	/**
-	 * Flintstone version.
-	 *
-	 * @var string
-	 */
-	const VERSION = '2.0';
+    /**
+     * Flintstone version.
+     *
+     * @var string
+     */
+    const VERSION = '2.0';
 
-	/**
-	 * Database class
-	 *
-	 * @var Database
-	 */
-	protected $database;
+    /**
+     * Database class.
+     *
+     * @var Database
+     */
+    protected $database;
 
-	/**
-	 * Config class
-	 *
-	 * @var Config
-	 */
-	protected $config;
+    /**
+     * Config class.
+     *
+     * @var Config
+     */
+    protected $config;
 
-	/**
-	 * Constructor
-	 *
-	 * @param Database|string $database
-	 * @param Config|array $config
-	 */
-	public function __construct($database, $config)
-	{
-		if (is_string($database)) {
-			$database = new Database($database);
-		}
+    /**
+     * Constructor.
+     *
+     * @param Database|string $database
+     * @param Config|array    $config
+     */
+    public function __construct($database, $config)
+    {
+        if (is_string($database)) {
+            $database = new Database($database);
+        }
 
-		if (is_array($config)) {
-			$config = new Config($config);
-		}
+        if (is_array($config)) {
+            $config = new Config($config);
+        }
 
-		$this->setDatabase($database);
-		$this->setConfig($config);
-	}
+        $this->setDatabase($database);
+        $this->setConfig($config);
+    }
 
-	/**
-	 * Get the database
-	 *
-	 * @return Database
-	 */
-	public function getDatabase()
-	{
-		return $this->database;
-	}
+    /**
+     * Get the database.
+     *
+     * @return Database
+     */
+    public function getDatabase()
+    {
+        return $this->database;
+    }
 
-	/**
-	 * Set the database
-	 *
-	 * @param Database $database
-	 */
-	public function setDatabase(Database $database)
-	{
-		$this->database = $database;
-	}
+    /**
+     * Set the database.
+     *
+     * @param Database $database
+     */
+    public function setDatabase(Database $database)
+    {
+        $this->database = $database;
+    }
 
-	/**
-	 * Get the config
-	 *
-	 * @return Config
-	 */
-	public function getConfig()
-	{
-		return $this->config;
-	}
+    /**
+     * Get the config.
+     *
+     * @return Config
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
 
-	/**
-	 * Set the config
-	 *
-	 * @param Config $config
-	 */
-	public function setConfig(Config $config)
-	{
-		$this->config = $config;
-		$this->getDatabase()->setConfig($config);
-	}
+    /**
+     * Set the config.
+     *
+     * @param Config $config
+     */
+    public function setConfig(Config $config)
+    {
+        $this->config = $config;
+        $this->getDatabase()->setConfig($config);
+    }
 
     /**
      * Get a key from the database.
@@ -103,19 +103,19 @@ class Flintstone
      * @return mixed
      */
     public function get($key)
-	{
-		$this->validateKey($key);
+    {
+        $this->validateKey($key);
 
-		// Fetch the key from cache
-		if ($cache = $this->getConfig()->getCache()) {
-			if ($cache->contains($key)) {
-				return $cache->fetch($key);
-			}
-		}
+        // Fetch the key from cache
+        if ($cache = $this->getConfig()->getCache()) {
+            if ($cache->contains($key)) {
+                return $cache->fetch($key);
+            }
+        }
 
-		// Fetch the key from database
-		$filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
-		$data = false;
+        // Fetch the key from database
+        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+        $data = false;
 
         foreach ($filePointer as $line) {
             $data = $this->getDataFromLine($line, $key);
@@ -126,75 +126,154 @@ class Flintstone
             }
         }
 
-		$this->getDatabase()->closeFile($filePointer);
+        $this->getDatabase()->closeFile($filePointer);
 
-		// Save the data to cache
-		if ($cache && $data !== false) {
-			$cache->save($key, $data);
-		}
+        // Save the data to cache
+        if ($cache && $data !== false) {
+            $cache->save($key, $data);
+        }
 
-		return $data;
-	}
+        return $data;
+    }
 
     /**
      * Set a key in the database.
      *
      * @param string $key
-     * @param mixed $data
+     * @param mixed  $data
      */
     public function set($key, $data)
-	{
+    {
         $this->validateKey($key);
         $this->validateData($data);
 
-		// If the key already exists we need to replace it
-		if ($this->get($key) !== false) {
-			$this->replace($key, $data);
-			return;
-		}
+        // If the key already exists we need to replace it
+        if ($this->get($key) !== false) {
+            $this->replace($key, $data);
 
-		// Write the key to the database
+            return;
+        }
+
+        // Write the key to the database
         $filePointer = $this->getDatabase()->openFile(Database::FILE_APPEND);
         $filePointer->fwrite($this->getLineString($key, $data));
         $this->getDatabase()->closeFile($filePointer);
-	}
+
+        // Delete the key from cache
+        if ($cache = $this->getConfig()->getCache()) {
+            $cache->delete($key);
+        }
+    }
+
+    /**
+     * Delete a key from the database.
+     *
+     * @param string $key
+     */
+    public function delete($key)
+    {
+        $this->validateKey($key);
+
+        if ($this->get($key) !== false) {
+            $this->replace($key, false);
+        }
+    }
+
+    /**
+     * Flush the database.
+     */
+    public function flush()
+    {
+        $filePointer = $this->getDatabase()->openFile(Database::FILE_WRITE);
+        $this->getDatabase()->closeFile($filePointer);
+
+        // Flush the cache
+        if ($cache = $this->getConfig()->getCache()) {
+            $cache->deleteAll();
+        }
+    }
+
+    /**
+     * Get all keys from the database.
+     *
+     * @return array
+     */
+    public function getKeys()
+    {
+        $keys = array();
+        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+
+        foreach ($filePointer as $line) {
+            $keys[] = $this->getKeyFromLine($line);
+        }
+
+        $this->getDatabase()->closeFile($filePointer);
+
+        return $keys;
+    }
+
+    /**
+     * Get all data from the database.
+     *
+     * @return array
+     */
+    public function getAll()
+    {
+        $data = array();
+        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+
+        foreach ($filePointer as $line) {
+            $pieces = $this->getLinePieces($line);
+            $data[$pieces[0]] = $this->decodeData($pieces[1]);
+        }
+
+        $this->getDatabase()->closeFile($filePointer);
+
+        return $data;
+    }
 
     /**
      * Replace a key in the database.
      *
      * @param string $key
-     * @param mixed $data
+     * @param mixed  $data
      */
     protected function replace($key, $data)
-	{
-		// Open a temporary file for writing and the database for reading
-		$tmp = $this->getDatabase()->openTempFile();
-		$filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+    {
+        // Write a new database to a temporary file
+        $tmp = $this->getDatabase()->openTempFile();
+        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
 
-		foreach ($filePointer as $line) {
-			$lineKey = $this->getKeyFromLine($line);
+        foreach ($filePointer as $line) {
+            $lineKey = $this->getKeyFromLine($line);
 
-			if ($lineKey == $key) {
-				$tmp->fwrite($this->getLineString($key, $data));
-			}
-			else {
-				$tmp->fwrite($line . "\n");
-			}
-		}
+            if ($lineKey == $key) {
+                if ($data !== false) {
+                    $tmp->fwrite($this->getLineString($key, $data));
+                }
+            } else {
+                $tmp->fwrite($line."\n");
+            }
+        }
 
-		$this->getDatabase()->closeFile($filePointer);
-		$tmp->rewind();
+        $this->getDatabase()->closeFile($filePointer);
+        $tmp->rewind();
 
-		// Overwrite the database with the temporary file
-		$filePointer = $this->getDatabase()->openFile(Database::FILE_WRITE);
+        // Overwrite the database with the temporary file
+        $filePointer = $this->getDatabase()->openFile(Database::FILE_WRITE);
 
-		foreach ($tmp as $line) {
-			$filePointer->fwrite($line);
-		}
+        foreach ($tmp as $line) {
+            $filePointer->fwrite($line);
+        }
 
-		$this->getDatabase()->closeFile($filePointer);
-		$tmp = null;
-	}
+        $this->getDatabase()->closeFile($filePointer);
+        $tmp = null;
+
+        // Delete the key from cache
+        if ($cache = $this->getConfig()->getCache()) {
+            $cache->delete($key);
+        }
+    }
 
     /**
      * Validate the key.
@@ -207,7 +286,7 @@ class Flintstone
     {
         if (empty($key) || !preg_match('/^[\w-]+$/', $key)) {
             throw new Exception('Invalid characters in key');
-		}
+        }
     }
 
     /**
@@ -215,9 +294,9 @@ class Flintstone
      *
      * @param mixed $data the data
      *
-     * @throws \Flintstone\FlintstoneException when data is invalid
+     * @throws Exception
      */
-    private function validateData($data)
+    protected function validateData($data)
     {
         if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
             throw new Exception('Invalid data type');
@@ -225,16 +304,28 @@ class Flintstone
     }
 
     /**
-     * Retrieve data from a given line.
+     * Retrieve the pieces from a given line.
+     *
+     * @param string $line
+     *
+     * @return array
+     */
+    protected function getLinePieces($line)
+    {
+        return explode('=', $line, 2);
+    }
+
+    /**
+     * Retrieve data from a given line for a specific key.
      *
      * @param string $line
      * @param string $key
      *
-     * @return string|boolean
+     * @return string|bool
      */
     protected function getDataFromLine($line, $key)
     {
-        $pieces = explode('=', $line, 2);
+        $pieces = $this->getLinePieces($line);
 
         return ($pieces[0] == $key) ? $pieces[1] : false;
     }
@@ -248,22 +339,22 @@ class Flintstone
      */
     protected function getKeyFromLine($line)
     {
-        $pieces = explode('=', $line, 2);
+        $pieces = $this->getLinePieces($line);
 
         return $pieces[0];
     }
 
     /**
-     * Get the line string to write
+     * Get the line string to write.
      *
      * @param string $key
-     * @param mixed $data
+     * @param mixed  $data
      *
      * @return string
      */
     protected function getLineString($key, $data)
     {
-        return $key . "=" . $this->encodeData($data) . "\n";
+        return $key.'='.$this->encodeData($data)."\n";
     }
 
     /**
@@ -273,10 +364,10 @@ class Flintstone
      *
      * @return mixed
      */
-	protected function decodeData($data)
-	{
-		return $this->getConfig()->getFormatter()->decode($data);
-	}
+    protected function decodeData($data)
+    {
+        return $this->getConfig()->getFormatter()->decode($data);
+    }
 
     /**
      * Encode data into a string.
@@ -285,8 +376,8 @@ class Flintstone
      *
      * @return string
      */
-	protected function encodeData($data)
-	{
-		return $this->getConfig()->getFormatter()->encode($data);
-	}
+    protected function encodeData($data)
+    {
+        return $this->getConfig()->getFormatter()->encode($data);
+    }
 }
