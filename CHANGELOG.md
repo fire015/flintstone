@@ -2,7 +2,7 @@ Change Log
 ==========
 ### 14/12/2015 - 2.0
 * Major refactor, class names have changed and the whole codebase is much more extensible
-* Removed the static `load` and `unload` methods
+* Removed the static `load` and `unload` methods and the `FlinstoneDB` class
 * The `replace` method is no longer public
 * The `getFile` method has been removed
 * Default swap memory limit has been increased to 2MB
