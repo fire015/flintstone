@@ -10,7 +10,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     public function testDefaultConfig()
     {
         $config = new Config();
-        $this->assertEquals('', $config->getDir());
+        $this->assertEquals(getcwd().DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.dat', $config->getExt());
         $this->assertFalse($config->useGzip());
         $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $config->getCache());
@@ -51,6 +51,15 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     {
         $config = new Config();
         $config->setDir('/x/y/z/foo');
+    }
+
+    /**
+     * @expectedException Flintstone\Exception
+     */
+    public function testConfigInvalidFormatter()
+    {
+        $config = new Config();
+        $config->setFormatter(new ConfigTestCache());
     }
 
     /**

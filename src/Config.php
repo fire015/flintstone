@@ -20,18 +20,11 @@ use Flintstone\Formatter\SerializeFormatter;
 class Config
 {
     /**
-     * Default config.
+     * Config.
      *
      * @var array
      */
-    protected $config = array(
-        'dir' => '',
-        'ext' => '.dat',
-        'gzip' => false,
-        'cache' => true,
-        'formatter' => null,
-        'swap_memory_limit' => 2097152,    // 2MB
-    );
+    protected $config = array();
 
     /**
      * Constructor.
@@ -40,24 +33,34 @@ class Config
      */
     public function __construct(array $config = array())
     {
-        if (isset($config['dir'])) {
-            $this->setDir($config['dir']);
-        }
-        if (isset($config['ext'])) {
-            $this->setExt($config['ext']);
-        }
-        if (isset($config['gzip'])) {
-            $this->setGzip($config['gzip']);
-        }
-        if (isset($config['cache'])) {
-            $this->setCache($config['cache']);
-        }
-        if (isset($config['formatter'])) {
-            $this->setFormatter($config['formatter']);
-        }
-        if (isset($config['swap_memory_limit'])) {
-            $this->setSwapMemoryLimit($config['swap_memory_limit']);
-        }
+        $config = $this->normalizeConfig($config);
+        $this->setDir($config['dir']);
+        $this->setExt($config['ext']);
+        $this->setGzip($config['gzip']);
+        $this->setCache($config['cache']);
+        $this->setFormatter($config['formatter']);
+        $this->setSwapMemoryLimit($config['swap_memory_limit']);
+    }
+
+    /**
+     * Normalize the user supplied config.
+     *
+     * @param array $config
+     *
+     * @return array
+     */
+    protected function normalizeConfig(array $config)
+    {
+        $defaultConfig = array(
+            'dir' => getcwd(),
+            'ext' => '.dat',
+            'gzip' => false,
+            'cache' => true,
+            'formatter' => null,
+            'swap_memory_limit' => 2097152,    // 2MB
+        );
+
+        return array_replace($defaultConfig, $config);
     }
 
     /**
@@ -141,10 +144,6 @@ class Config
      */
     public function getCache()
     {
-        if ($this->config['cache'] === true) {
-            $this->config['cache'] = new ArrayCache();
-        }
-
         return $this->config['cache'];
     }
 
@@ -159,6 +158,10 @@ class Config
             throw new Exception('Cache must be a boolean or an instance of Doctrine\Common\Cache\Cache and Doctrine\Common\Cache\ClearableCache');
         }
 
+        if ($cache === true) {
+            $cache = new ArrayCache();
+        }
+
         $this->config['cache'] = $cache;
     }
 
@@ -169,20 +172,24 @@ class Config
      */
     public function getFormatter()
     {
-        if ($this->config['formatter'] === null) {
-            $this->config['formatter'] = new SerializeFormatter();
-        }
-
         return $this->config['formatter'];
     }
 
     /**
      * Set the formatter.
      *
-     * @param FormatterInterface $formatter
+     * @param FormatterInterface|null $formatter
      */
-    public function setFormatter(FormatterInterface $formatter)
+    public function setFormatter($formatter)
     {
+        if ($formatter === null) {
+            $formatter = new SerializeFormatter();
+        }
+
+        if (!$formatter instanceof FormatterInterface) {
+            throw new Exception('Formatter must be an instance of Flintstone\Formatter\FormatterInterface');
+        }
+
         $this->config['formatter'] = $formatter;
     }
 
