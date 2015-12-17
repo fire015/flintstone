@@ -224,7 +224,7 @@ class Database
         }
 
         // Fetch the key from database
-        $filePointer = $this->openFile(Database::FILE_READ);
+        $filePointer = $this->openFile(self::FILE_READ);
         $data = false;
 
         foreach ($filePointer as $line) {
@@ -265,7 +265,7 @@ class Database
         }
 
         // Write the key to the database
-        $filePointer = $this->openFile(Database::FILE_APPEND);
+        $filePointer = $this->openFile(self::FILE_APPEND);
         $filePointer->fwrite($this->getLineString($key, $data));
         $this->closeFile($filePointer);
 
@@ -294,7 +294,7 @@ class Database
      */
     public function flush()
     {
-        $filePointer = $this->openFile(Database::FILE_WRITE);
+        $filePointer = $this->openFile(self::FILE_WRITE);
         $this->closeFile($filePointer);
 
         // Flush the cache
@@ -311,7 +311,7 @@ class Database
     public function getKeys()
     {
         $keys = array();
-        $filePointer = $this->openFile(Database::FILE_READ);
+        $filePointer = $this->openFile(self::FILE_READ);
 
         foreach ($filePointer as $line) {
             $keys[] = $this->getKeyFromLine($line);
@@ -330,7 +330,7 @@ class Database
     public function getAll()
     {
         $data = array();
-        $filePointer = $this->openFile(Database::FILE_READ);
+        $filePointer = $this->openFile(self::FILE_READ);
 
         foreach ($filePointer as $line) {
             $pieces = $this->getLinePieces($line);
@@ -352,7 +352,7 @@ class Database
     {
         // Write a new database to a temporary file
         $tmp = $this->openTempFile();
-        $filePointer = $this->openFile(Database::FILE_READ);
+        $filePointer = $this->openFile(self::FILE_READ);
 
         foreach ($filePointer as $line) {
             $lineKey = $this->getKeyFromLine($line);
@@ -370,7 +370,7 @@ class Database
         $tmp->rewind();
 
         // Overwrite the database with the temporary file
-        $filePointer = $this->openFile(Database::FILE_WRITE);
+        $filePointer = $this->openFile(self::FILE_WRITE);
 
         foreach ($tmp as $line) {
             $filePointer->fwrite($line);

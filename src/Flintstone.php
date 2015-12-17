@@ -38,7 +38,7 @@ class Flintstone
     }
 
     /**
-     * Load the database
+     * Load a new instance of Flintstone.
      *
      * @param string $database
      * @param array $config
