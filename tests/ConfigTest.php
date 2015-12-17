@@ -1,19 +1,17 @@
 <?php
 
 use Flintstone\Config;
-use Doctrine\Common\Cache\Cache;
 use Flintstone\Formatter\JsonFormatter;
-use Doctrine\Common\Cache\ClearableCache;
 
 class ConfigTest extends PHPUnit_Framework_TestCase
 {
     public function testDefaultConfig()
     {
         $config = new Config();
-        $this->assertEquals(getcwd().DIRECTORY_SEPARATOR, $config->getDir());
+        $this->assertEquals(getcwd() . DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.dat', $config->getExt());
         $this->assertFalse($config->useGzip());
-        $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $config->getCache());
+        $this->assertInstanceOf('Flintstone\Cache\ArrayCache', $config->getCache());
         $this->assertInstanceOf('Flintstone\Formatter\SerializeFormatter', $config->getFormatter());
         $this->assertEquals(2097152, $config->getSwapMemoryLimit());
     }
@@ -29,10 +27,10 @@ class ConfigTest extends PHPUnit_Framework_TestCase
             'swap_memory_limit' => 100,
         ));
 
-        $this->assertEquals(__DIR__.DIRECTORY_SEPARATOR, $config->getDir());
+        $this->assertEquals(__DIR__ . DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.test.gz', $config->getExt());
         $this->assertTrue($config->useGzip());
-        $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $config->getCache());
+        $this->assertInstanceOf('Flintstone\Cache\ArrayCache', $config->getCache());
         $this->assertInstanceOf('Flintstone\Formatter\SerializeFormatter', $config->getFormatter());
         $this->assertEquals(100, $config->getSwapMemoryLimit());
     }
@@ -59,7 +57,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     public function testConfigInvalidFormatter()
     {
         $config = new Config();
-        $config->setFormatter(new ConfigTestCache());
+        $config->setFormatter(new self());
     }
 
     /**
@@ -68,66 +66,6 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     public function testConfigInvalidCache()
     {
         $config = new Config();
-        $config->setCache(new ConfigTestCache());
-    }
-
-    public function testConfigCache()
-    {
-        $config = new Config();
-        $config->setCache(new ConfigTestClearableCache());
-    }
-}
-
-class ConfigTestCache implements Cache
-{
-    public function fetch($id)
-    {
-    }
-
-    public function contains($id)
-    {
-    }
-
-    public function save($id, $data, $lifeTime = 0)
-    {
-    }
-
-    public function delete($id)
-    {
-    }
-
-    public function getStats()
-    {
-    }
-
-    public function deleteAll()
-    {
-    }
-}
-
-class ConfigTestClearableCache implements Cache, ClearableCache
-{
-    public function fetch($id)
-    {
-    }
-
-    public function contains($id)
-    {
-    }
-
-    public function save($id, $data, $lifeTime = 0)
-    {
-    }
-
-    public function delete($id)
-    {
-    }
-
-    public function getStats()
-    {
-    }
-
-    public function deleteAll()
-    {
+        $config->setCache(new self());
     }
 }

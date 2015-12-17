@@ -20,7 +20,7 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
             'dir' => __DIR__,
         ));
 
-        $path = __DIR__.DIRECTORY_SEPARATOR.'test.dat';
+        $path = __DIR__ . DIRECTORY_SEPARATOR . 'test.dat';
 
         $db = new Database('test', $config);
         $this->assertEquals('test', $db->getName());

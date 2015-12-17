@@ -5,23 +5,12 @@ use Flintstone\Formatter\JsonFormatter;
 
 class FlintstoneTest extends PHPUnit_Framework_TestCase
 {
-    public function testGetDatabaseAndConfig()
-    {
-        $db = new Flintstone('test', array(
-            'dir' => __DIR__,
-            'cache' => false,
-        ));
-
-        $this->assertInstanceOf('Flintstone\Database', $db->getDatabase());
-        $this->assertInstanceOf('Flintstone\Config', $db->getConfig());
-    }
-
     /**
      * @expectedException Flintstone\Exception
      */
     public function testKeyInvalidName()
     {
-        $db = new Flintstone('test', array());
+        $db = Flintstone::load('test');
         $db->get('test!123');
     }
 
@@ -30,7 +19,7 @@ class FlintstoneTest extends PHPUnit_Framework_TestCase
      */
     public function testKeyInvalidData()
     {
-        $db = new Flintstone('test', array());
+        $db = Flintstone::load('test');
         $db->set('test', new self());
     }
 
@@ -58,7 +47,7 @@ class FlintstoneTest extends PHPUnit_Framework_TestCase
 
     protected function runOperationsTests($config)
     {
-        $db = new Flintstone('test', $config);
+        $db = Flintstone::load('test', $config);
         $arr = array('foo' => "new\nline");
 
         $this->assertFalse($db->get('foo'));

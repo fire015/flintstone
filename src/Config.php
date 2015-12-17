@@ -11,9 +11,8 @@
 
 namespace Flintstone;
 
-use Doctrine\Common\Cache\Cache;
-use Doctrine\Common\Cache\ArrayCache;
-use Doctrine\Common\Cache\ClearableCache;
+use Flintstone\Cache\ArrayCache;
+use Flintstone\Cache\CacheInterface;
 use Flintstone\Formatter\FormatterInterface;
 use Flintstone\Formatter\SerializeFormatter;
 
@@ -83,10 +82,10 @@ class Config
     public function setDir($dir)
     {
         if (!is_dir($dir)) {
-            throw new Exception('Directory does not exist: '.$dir);
+            throw new Exception('Directory does not exist: ' . $dir);
         }
 
-        $this->config['dir'] = rtrim($dir, '/\\').DIRECTORY_SEPARATOR;
+        $this->config['dir'] = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -97,7 +96,7 @@ class Config
     public function getExt()
     {
         if ($this->useGzip()) {
-            return $this->config['ext'].'.gz';
+            return $this->config['ext'] . '.gz';
         }
 
         return $this->config['ext'];
@@ -111,7 +110,7 @@ class Config
     public function setExt($ext)
     {
         if ('.' != substr($ext, 0, 1)) {
-            $ext = '.'.$ext;
+            $ext = '.' . $ext;
         }
 
         $this->config['ext'] = $ext;
@@ -134,13 +133,13 @@ class Config
      */
     public function setGzip($gzip)
     {
-        $this->config['gzip'] = (bool) $gzip;
+        $this->config['gzip'] = (bool)$gzip;
     }
 
     /**
      * Get the cache.
      *
-     * @return Cache|false
+     * @return CacheInterface|false
      */
     public function getCache()
     {
@@ -151,11 +150,13 @@ class Config
      * Set the cache.
      *
      * @param mixed $cache
+     *
+     * @throws Exception
      */
     public function setCache($cache)
     {
-        if (!is_bool($cache) && !($cache instanceof Cache && $cache instanceof ClearableCache)) {
-            throw new Exception('Cache must be a boolean or an instance of Doctrine\Common\Cache\Cache and Doctrine\Common\Cache\ClearableCache');
+        if (!is_bool($cache) && !$cache instanceof CacheInterface) {
+            throw new Exception('Cache must be a boolean or an instance of Flintstone\Cache\CacheInterface');
         }
 
         if ($cache === true) {
@@ -179,6 +180,8 @@ class Config
      * Set the formatter.
      *
      * @param FormatterInterface|null $formatter
+     *
+     * @throws Exception
      */
     public function setFormatter($formatter)
     {
@@ -210,6 +213,6 @@ class Config
      */
     public function setSwapMemoryLimit($limit)
     {
-        $this->config['swap_memory_limit'] = (int) $limit;
+        $this->config['swap_memory_limit'] = (int)$limit;
     }
 }
