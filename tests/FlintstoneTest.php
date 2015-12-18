@@ -158,7 +158,7 @@ class FlintstoneTest extends PHPUnit_Framework_TestCase
         $db->set('name', 'john');
         $db->set('arr', $arr);
 
-        $this->assertEquals(['foo', 'name', 'arr'], $db->getKeys());
+        $this->assertEquals(array('foo', 'name', 'arr'), $db->getKeys());
         unlink($db->getDatabase()->getPath());
     }
 
