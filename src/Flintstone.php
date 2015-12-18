@@ -34,7 +34,7 @@ class Flintstone
      */
     public function __construct(Database $database)
     {
-        $this->setDatabase($database);
+        $this->database = $database;
     }
 
     /**
@@ -58,16 +58,6 @@ class Flintstone
     public function getDatabase()
     {
         return $this->database;
-    }
-
-    /**
-     * Set the database.
-     *
-     * @param Database $database
-     */
-    public function setDatabase(Database $database)
-    {
-        $this->database = $database;
     }
 
     /**

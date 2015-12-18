@@ -51,11 +51,11 @@ Flintstone can store the following data types:
 
 |Name				|Type		|Default Value	|Description														|
 |---				|---		|---				|---														|
-|dir				|string				|''			|The directory where the database files are stored (this should be somewhere that is not web accessible) e.g. /path/to/database/			|
-|ext				|string				|.dat		|The database file extension to use							|
+|directory				|string				|''			|The directory where the database files are stored (this should be somewhere that is not web accessible) e.g. /path/to/database/			|
+|extension				|string				|.dat		|The database file extension to use							|
 |gzip				|boolean			|false		|Use gzip to compress the database							|
-|cache				|boolean or object	|true		|Whether to cache `get()` results for faster data retrieval								|
-|formatter			|null or object		|null		|The formatter class used to encode/decode data				|
+|cache				|CacheInterface	|ArrayCache		|Whether to cache `get()` results for faster data retrieval								|
+|formatter			|FormatterInterface		|SerializeFormatter		|The formatter class used to encode/decode data				|
 |swap_memory_limit	|integer			|2097152	|The amount of memory to use before writing to a temporary file	|
 
 
@@ -63,7 +63,7 @@ Flintstone can store the following data types:
 
 ```php
 // Set options
-$options = array('dir' => '/path/to/database/dir/');
+$options = array('directory' => '/path/to/database/dir/');
 
 // Load the databases
 $users = new Flintstone('users', $options);
@@ -116,7 +116,7 @@ use Flintstone\Flintstone;
 use Flintstone\Formatter\JsonFormatter;
 
 $users = new Flintstone('users', array(
-	'dir' => __DIR__,
+	'directory' => __DIR__,
 	'formatter' => new JsonFormatter
 ));
 ```
@@ -141,7 +141,7 @@ $cache = new MemcachedCache;
 $cache->setMemcached($memcached);
 
 $users = new Flintstone('users', array(
-	'dir' => __DIR__,
+	'directory' => __DIR__,
 	'cache' => $cache
 ));
 ```

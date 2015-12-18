@@ -3,8 +3,16 @@
 use Flintstone\Config;
 use Flintstone\Database;
 
+/**
+ * @group database
+ */
 class DatabaseTest extends PHPUnit_Framework_TestCase
 {
+    public function tearDown()
+    {
+        @unlink(getcwd().'/test.dat');
+    }
+
     /**
      * @expectedException Flintstone\Exception
      */
@@ -17,7 +25,7 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
     public function testGetDatabaseAndConfig()
     {
         $config = new Config(array(
-            'dir' => __DIR__,
+            'directory' => __DIR__,
         ));
 
         $path = __DIR__ . DIRECTORY_SEPARATOR . 'test.dat';
@@ -26,5 +34,24 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('test', $db->getName());
         $this->assertInstanceOf('Flintstone\Config', $db->getConfig());
         $this->assertEquals($path, $db->getPath());
+    }
+
+    public function testNameImmutability()
+    {
+        $db = new Database('test', new Config());
+        $this->assertSame($db, $db->withName('test'));
+        $this->assertNotEquals($db, $db->withName('tacos'));
+    }
+
+
+    public function testConfigImmutability()
+    {
+        $config = new Config();
+        $sameConfig = $config->withExtension('.dat');
+        $altConfig = $config->withExtension('db');
+
+        $db = new Database('test', $config);
+        $this->assertSame($db, $db->withConfig($sameConfig));
+        $this->assertNotEquals($db, $db->withConfig($altConfig));
     }
 }

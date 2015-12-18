@@ -21,5 +21,8 @@
     },
     "require-dev" : {
         "phpunit/phpunit": "~4.0"
+    },
+    "scripts": {
+        "test": "phpunit --coverage-text"
     }
 }
