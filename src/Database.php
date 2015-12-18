@@ -11,6 +11,7 @@
 
 namespace Flintstone;
 
+use Flintstone\Cache\CacheInterface;
 use SplFileObject;
 use SplTempFileObject;
 
@@ -79,8 +80,26 @@ class Database
      */
     public function __construct($name, Config $config)
     {
-        $this->setName($name);
-        $this->setConfig($config);
+        $this->name = $this->filterName($name);
+        $this->config = $config;
+    }
+
+    /**
+     * Validate a submitted name for the database
+     *
+     * @param string $name
+     *
+     * @throws Exception If the name is invalid
+     *
+     * @return string
+     */
+    protected function filterName($name)
+    {
+        if (empty($name) || !preg_match('/^[\w-]+$/', $name)) {
+            throw new Exception('Invalid characters in database name');
+        }
+
+        return $name;
     }
 
     /**
@@ -94,23 +113,31 @@ class Database
     }
 
     /**
-     * Set the database name.
+     * Return an instance with the specified name.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified name.
      *
      * @param string $name
      *
      * @throws Exception
+     *
+     * @return self
      */
-    public function setName($name)
+    public function withName($name)
     {
-        if (empty($name) || !preg_match('/^[\w-]+$/', $name)) {
-            throw new Exception('Invalid characters in database name');
+        $name = $this->filterName($name);
+        if ($name === $this->name) {
+            return $this;
         }
+        $clone = clone $this;
+        $clone->name = $name;
 
-        $this->name = $name;
+        return $clone;
     }
 
     /**
-     * Get the config.
+     * Return the Database configuration object
      *
      * @return Config
      */
@@ -120,23 +147,86 @@ class Database
     }
 
     /**
-     * Set the config.
+     * Return an instance with the specified configuration.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the new configuration
      *
      * @param Config $config
+     *
+     * @return self
      */
-    public function setConfig(Config $config)
+    public function withConfig(Config $config)
     {
-        $this->config = $config;
+        if ($config === $this->config) {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->config = $config;
+
+        return $clone;
     }
 
     /**
-     * Get the path to the database file.
+     * Get a key from the database.
      *
-     * @return string
+     * @param string $key
+     *
+     * @return mixed
      */
-    public function getPath()
+    public function get($key)
     {
-        return $this->config->getDir() . $this->getName() . $this->config->getExt();
+        $this->validateKey($key);
+
+        $cache = $this->getConfig()->getCache();
+        if ($cache->contains($key)) {
+            return $cache->get($key);
+        }
+
+        $data = $this->getValue($key);
+        if ($data !== false) {
+            $cache->set($key, $data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Validate the key.
+     *
+     * @param string $key
+     *
+     * @throws Exception
+     */
+    protected function validateKey($key)
+    {
+        if (empty($key) || !preg_match('/^[\w-]+$/', $key)) {
+            throw new Exception('Invalid characters in key');
+        }
+    }
+
+    /**
+     * Retrieve the value from the Cache File
+     *
+     * @param  string $key
+     *
+     * @return mixed
+     */
+    protected function getValue($key)
+    {
+        $filePointer = $this->openFile(self::FILE_READ);
+        $data = false;
+        foreach ($filePointer as $line) {
+            $data = $this->getDataFromLine($line, $key);
+            if ($data !== false) {
+                $data = $this->decodeData($data);
+                break;
+            }
+        }
+
+        $this->closeFile($filePointer);
+
+        return $data;
     }
 
     /**
@@ -148,18 +238,9 @@ class Database
      *
      * @return SplFileObject
      */
-    public function openFile($mode)
+    protected function openFile($mode)
     {
         $path = $this->getPath();
-
-        if (!is_file($path) && !@touch($path)) {
-            throw new Exception('Could not create file: ' . $path);
-        }
-
-        if (!is_readable($path) || !is_writable($path)) {
-            throw new Exception('File does not have permission for read and write: ' . $path);
-        }
-
         if ($this->getConfig()->useGzip()) {
             $path = 'compress.zlib://' . $path;
         }
@@ -179,13 +260,62 @@ class Database
     }
 
     /**
-     * Open a temporary file.
+     * Get the path to the database file.
      *
-     * @return SplTempFileObject
+     * @return string
      */
-    public function openTempFile()
+    public function getPath()
     {
-        return new SplTempFileObject($this->getConfig()->getSwapMemoryLimit());
+        $ext = $this->config->getExtension();
+        if ($this->config->useGzip()) {
+            $ext .= '.gz';
+        }
+
+        $path = $this->config->getDirectory() . $this->getName() . $ext;
+        if (!is_file($path)) {
+            touch($path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Retrieve data from a given line for a specific key.
+     *
+     * @param string $line
+     * @param string $key
+     *
+     * @return string|bool
+     */
+    protected function getDataFromLine($line, $key)
+    {
+        $pieces = $this->getLinePieces($line);
+
+        return ($pieces[0] == $key) ? $pieces[1] : false;
+    }
+
+    /**
+     * Retrieve the pieces from a given line.
+     *
+     * @param string $line
+     *
+     * @return array
+     */
+    protected function getLinePieces($line)
+    {
+        return explode('=', $line, 2);
+    }
+
+    /**
+     * Decode a string into data.
+     *
+     * @param string $data
+     *
+     * @return mixed
+     */
+    protected function decodeData($data)
+    {
+        return $this->getConfig()->getFormatter()->decode($data);
     }
 
     /**
@@ -195,7 +325,7 @@ class Database
      *
      * @throws Exception
      */
-    public function closeFile(SplFileObject &$file)
+    protected function closeFile(SplFileObject &$file)
     {
         if (!$this->getConfig()->useGzip() && !$file->flock(LOCK_UN)) {
             $file = null;
@@ -203,47 +333,6 @@ class Database
         }
 
         $file = null;
-    }
-
-    /**
-     * Get a key from the database.
-     *
-     * @param string $key
-     *
-     * @return mixed
-     */
-    public function get($key)
-    {
-        $this->validateKey($key);
-
-        // Fetch the key from cache
-        if ($cache = $this->getConfig()->getCache()) {
-            if ($cache->contains($key)) {
-                return $cache->get($key);
-            }
-        }
-
-        // Fetch the key from database
-        $filePointer = $this->openFile(self::FILE_READ);
-        $data = false;
-
-        foreach ($filePointer as $line) {
-            $data = $this->getDataFromLine($line, $key);
-
-            if ($data !== false) {
-                $data = $this->decodeData($data);
-                break;
-            }
-        }
-
-        $this->closeFile($filePointer);
-
-        // Save the data to cache
-        if ($cache && $data !== false) {
-            $cache->set($key, $data);
-        }
-
-        return $data;
     }
 
     /**
@@ -257,21 +346,80 @@ class Database
         $this->validateKey($key);
         $this->validateData($data);
 
-        // If the key already exists we need to replace it
         if ($this->get($key) !== false) {
             $this->replace($key, $data);
 
             return;
         }
 
-        // Write the key to the database
         $filePointer = $this->openFile(self::FILE_APPEND);
         $filePointer->fwrite($this->getLineString($key, $data));
         $this->closeFile($filePointer);
 
-        // Delete the key from cache
         if ($cache = $this->getConfig()->getCache()) {
             $cache->delete($key);
+        }
+    }
+
+    /**
+     * Replace a key in the database.
+     *
+     * @param string $key
+     * @param mixed $data
+     */
+    protected function replace($key, $data)
+    {
+        $tmp = new SplTempFileObject($this->getConfig()->getSwapMemoryLimit());
+        $filePointer = $this->openFile(self::FILE_READ);
+        foreach ($filePointer as $line) {
+            $lineKey = $this->getKeyFromLine($line);
+            if ($lineKey == $key && $data !== false) {
+                $tmp->fwrite($this->getLineString($key, $data));
+            }
+        }
+
+        $this->closeFile($filePointer);
+        $tmp->rewind();
+
+
+        $filePointer = $this->openFile(self::FILE_WRITE);
+        foreach ($tmp as $line) {
+            $filePointer->fwrite($line);
+        }
+        $this->closeFile($filePointer);
+        $tmp = null;
+
+        if ($cache = $this->getConfig()->getCache()) {
+            $cache->delete($key);
+        }
+    }
+
+    /**
+     * Get the line string to write.
+     *
+     * @param string $key
+     * @param mixed $data
+     *
+     * @return string
+     */
+    protected function getLineString($key, $data)
+    {
+        $encodedData = $this->getConfig()->getFormatter()->encode($data);
+
+        return $key . '=' . $encodedData . "\n";
+    }
+
+    /**
+     * Check the data type is valid.
+     *
+     * @param mixed $data the data
+     *
+     * @throws Exception
+     */
+    protected function validateData($data)
+    {
+        if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
+            throw new Exception('Invalid data type');
         }
     }
 
@@ -297,7 +445,6 @@ class Database
         $filePointer = $this->openFile(self::FILE_WRITE);
         $this->closeFile($filePointer);
 
-        // Flush the cache
         if ($cache = $this->getConfig()->getCache()) {
             $cache->flush();
         }
@@ -323,6 +470,20 @@ class Database
     }
 
     /**
+     * Retrieve key from a given line.
+     *
+     * @param string $line
+     *
+     * @return string
+     */
+    protected function getKeyFromLine($line)
+    {
+        $pieces = $this->getLinePieces($line);
+
+        return $pieces[0];
+    }
+
+    /**
      * Get all data from the database.
      *
      * @return array
@@ -340,154 +501,5 @@ class Database
         $this->closeFile($filePointer);
 
         return $data;
-    }
-
-    /**
-     * Replace a key in the database.
-     *
-     * @param string $key
-     * @param mixed $data
-     */
-    protected function replace($key, $data)
-    {
-        // Write a new database to a temporary file
-        $tmp = $this->openTempFile();
-        $filePointer = $this->openFile(self::FILE_READ);
-
-        foreach ($filePointer as $line) {
-            $lineKey = $this->getKeyFromLine($line);
-
-            if ($lineKey == $key) {
-                if ($data !== false) {
-                    $tmp->fwrite($this->getLineString($key, $data));
-                }
-            } else {
-                $tmp->fwrite($line . "\n");
-            }
-        }
-
-        $this->closeFile($filePointer);
-        $tmp->rewind();
-
-        // Overwrite the database with the temporary file
-        $filePointer = $this->openFile(self::FILE_WRITE);
-
-        foreach ($tmp as $line) {
-            $filePointer->fwrite($line);
-        }
-
-        $this->closeFile($filePointer);
-        $tmp = null;
-
-        // Delete the key from cache
-        if ($cache = $this->getConfig()->getCache()) {
-            $cache->delete($key);
-        }
-    }
-
-    /**
-     * Validate the key.
-     *
-     * @param string $key
-     *
-     * @throws Exception
-     */
-    protected function validateKey($key)
-    {
-        if (empty($key) || !preg_match('/^[\w-]+$/', $key)) {
-            throw new Exception('Invalid characters in key');
-        }
-    }
-
-    /**
-     * Check the data type is valid.
-     *
-     * @param mixed $data the data
-     *
-     * @throws Exception
-     */
-    protected function validateData($data)
-    {
-        if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
-            throw new Exception('Invalid data type');
-        }
-    }
-
-    /**
-     * Retrieve the pieces from a given line.
-     *
-     * @param string $line
-     *
-     * @return array
-     */
-    protected function getLinePieces($line)
-    {
-        return explode('=', $line, 2);
-    }
-
-    /**
-     * Retrieve data from a given line for a specific key.
-     *
-     * @param string $line
-     * @param string $key
-     *
-     * @return string|bool
-     */
-    protected function getDataFromLine($line, $key)
-    {
-        $pieces = $this->getLinePieces($line);
-
-        return ($pieces[0] == $key) ? $pieces[1] : false;
-    }
-
-    /**
-     * Retrieve key from a given line.
-     *
-     * @param string $line
-     *
-     * @return string
-     */
-    protected function getKeyFromLine($line)
-    {
-        $pieces = $this->getLinePieces($line);
-
-        return $pieces[0];
-    }
-
-    /**
-     * Get the line string to write.
-     *
-     * @param string $key
-     * @param mixed $data
-     *
-     * @return string
-     */
-    protected function getLineString($key, $data)
-    {
-        return $key . '=' . $this->encodeData($data) . "\n";
-    }
-
-    /**
-     * Decode a string into data.
-     *
-     * @param string $data
-     *
-     * @return mixed
-     */
-    protected function decodeData($data)
-    {
-        return $this->getConfig()->getFormatter()->decode($data);
-    }
-
-    /**
-     * Encode data into a string.
-     *
-     * @param mixed $data
-     *
-     * @return string
-     */
-    protected function encodeData($data)
-    {
-        return $this->getConfig()->getFormatter()->encode($data);
     }
 }

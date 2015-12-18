@@ -16,6 +16,9 @@ use Flintstone\Cache\CacheInterface;
 use Flintstone\Formatter\FormatterInterface;
 use Flintstone\Formatter\SerializeFormatter;
 
+/**
+ * A immutable value object class to configure a Database instance.
+ */
 class Config
 {
     /**
@@ -33,12 +36,13 @@ class Config
     public function __construct(array $config = array())
     {
         $config = $this->normalizeConfig($config);
-        $this->setDir($config['dir']);
-        $this->setExt($config['ext']);
-        $this->setGzip($config['gzip']);
-        $this->setCache($config['cache']);
-        $this->setFormatter($config['formatter']);
-        $this->setSwapMemoryLimit($config['swap_memory_limit']);
+
+        $this->config['directory'] = $this->filterDirectory($config['directory']);
+        $this->config['extension'] = $this->filterExtension($config['extension']);
+        $this->config['gzip'] = (bool) $config['gzip'];
+        $this->config['cache'] = $config['cache'];
+        $this->config['formatter'] = $config['formatter'];
+        $this->config['swap_memory_limit'] = $this->filterInteger($config['swap_memory_limit']);
     }
 
     /**
@@ -51,11 +55,11 @@ class Config
     protected function normalizeConfig(array $config)
     {
         $defaultConfig = array(
-            'dir' => getcwd(),
-            'ext' => '.dat',
+            'directory' => getcwd(),
+            'extension' => '.dat',
             'gzip' => false,
-            'cache' => true,
-            'formatter' => null,
+            'cache' => new ArrayCache(),
+            'formatter' => new SerializeFormatter(),
             'swap_memory_limit' => 2097152,    // 2MB
         );
 
@@ -63,61 +67,84 @@ class Config
     }
 
     /**
-     * Get the dir.
+     * Filter Directory
+     *
+     * @param string $directory
+     *
+     * @throws Exception If the Directory does not exist or is not accessible
      *
      * @return string
      */
-    public function getDir()
+    protected function filterDirectory($directory)
     {
-        return $this->config['dir'];
-    }
-
-    /**
-     * Set the dir.
-     *
-     * @param string $dir
-     *
-     * @throws Exception
-     */
-    public function setDir($dir)
-    {
-        if (!is_dir($dir)) {
-            throw new Exception('Directory does not exist: ' . $dir);
+        if (!is_dir($directory)) {
+            throw new Exception(sprintf('The submitted directory `%s` does not exist.',$directory));
         }
 
-        $this->config['dir'] = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
+        if (!is_readable($directory) || !is_writable($directory)) {
+            throw new Exception(sprintf('You don\'t have permission to read or write on `%s`', $directory));
+        }
+
+        return rtrim($directory, '/\\') . DIRECTORY_SEPARATOR;
     }
 
     /**
-     * Get the ext.
+     * Filter the extension
+     *
+     * @param string $extension
      *
      * @return string
      */
-    public function getExt()
+    protected function filterExtension($extension)
     {
-        if ($this->useGzip()) {
-            return $this->config['ext'] . '.gz';
+        if ('.' != substr($extension, 0, 1)) {
+            $extension = '.' . $extension;
         }
 
-        return $this->config['ext'];
+        return $extension;
     }
 
     /**
-     * Set the ext.
+     * Filter a Integer
      *
-     * @param string $ext
+     * @param int $int
+     *
+     * @throws Exception if the submitted integer is not in the valid range
+     *
+     * @return int
      */
-    public function setExt($ext)
+    protected function filterInteger($int)
     {
-        if ('.' != substr($ext, 0, 1)) {
-            $ext = '.' . $ext;
+        $int = filter_var($int, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1)));
+        if (false === $int) {
+            throw new Exception('The submitted value is not a valid integer');
         }
 
-        $this->config['ext'] = $ext;
+        return $int;
     }
 
     /**
-     * Use gzip?
+     * Return the directory which will contain the cache file.
+     *
+     * @return string
+     */
+    public function getDirectory()
+    {
+        return $this->config['directory'];
+    }
+
+    /**
+     * Return the File extension
+     *
+     * @return string
+     */
+    public function getExtension()
+    {
+        return $this->config['extension'];
+    }
+
+    /**
+     * Tell whether we are using Gzip compression
      *
      * @return bool
      */
@@ -127,19 +154,9 @@ class Config
     }
 
     /**
-     * Set gzip.
+     * Return the cache driver.
      *
-     * @param bool $gzip
-     */
-    public function setGzip($gzip)
-    {
-        $this->config['gzip'] = (bool)$gzip;
-    }
-
-    /**
-     * Get the cache.
-     *
-     * @return CacheInterface|false
+     * @return CacheInterface|null
      */
     public function getCache()
     {
@@ -147,53 +164,13 @@ class Config
     }
 
     /**
-     * Set the cache.
-     *
-     * @param mixed $cache
-     *
-     * @throws Exception
-     */
-    public function setCache($cache)
-    {
-        if (!is_bool($cache) && !$cache instanceof CacheInterface) {
-            throw new Exception('Cache must be a boolean or an instance of Flintstone\Cache\CacheInterface');
-        }
-
-        if ($cache === true) {
-            $cache = new ArrayCache();
-        }
-
-        $this->config['cache'] = $cache;
-    }
-
-    /**
-     * Get the formatter.
+     * Return the formatter engine.
      *
      * @return FormatterInterface
      */
     public function getFormatter()
     {
         return $this->config['formatter'];
-    }
-
-    /**
-     * Set the formatter.
-     *
-     * @param FormatterInterface|null $formatter
-     *
-     * @throws Exception
-     */
-    public function setFormatter($formatter)
-    {
-        if ($formatter === null) {
-            $formatter = new SerializeFormatter();
-        }
-
-        if (!$formatter instanceof FormatterInterface) {
-            throw new Exception('Formatter must be an instance of Flintstone\Formatter\FormatterInterface');
-        }
-
-        $this->config['formatter'] = $formatter;
     }
 
     /**
@@ -207,12 +184,133 @@ class Config
     }
 
     /**
-     * Set the swap memory limit.
+     * Return an instance with the specified directory.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified directory.
+     *
+     * @param string $dir
+     *
+     * @return self
+     */
+    public function withDirectory($dir)
+    {
+        $dir = $this->filterDirectory($dir);
+        if ($dir === $this->config['directory']) {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->config['directory'] = $dir;
+
+        return $clone;
+    }
+
+    /**
+     * Return an instance with the specified extension.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified extension.
+     *
+     * @param string $ext
+     *
+     * @return self
+     */
+    public function withExtension($ext)
+    {
+        $ext = $this->filterExtension($ext);
+        if ($ext === $this->config['extension']) {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->config['extension'] = $ext;
+
+        return $clone;
+    }
+
+    /**
+     * Return an instance with the specified gzip status.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified gzip status.
+     *
+     * @param bool $gzip
+     *
+     * @return self
+     */
+    public function withGzip($gzip)
+    {
+        $gzip = (bool) $gzip;
+        if ($gzip === $this->config['gzip']) {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->config['gzip'] = $gzip;
+
+        return $clone;
+    }
+
+    /**
+     * Return an instance with the specified cache driver
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified cache driver.
+     *
+     * @param CacheInterface $cache
+     *
+     * @return self
+     */
+    public function withCache(CacheInterface $cache)
+    {
+        if ($cache === $this->config['cache']) {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->config['cache'] = $cache;
+
+        return $clone;
+    }
+
+    /**
+     * Return an instance with the specified formatter engine
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified formatter engine.
+     *
+     * @param FormatterInterface $formatter
+     *
+     * @return self
+     */
+    public function withFormatter(FormatterInterface $formatter)
+    {
+        if ($formatter === $this->config['formatter']) {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->config['formatter'] = $formatter;
+
+        return $clone;
+    }
+
+    /**
+     * Return an instance with the specified swap memory limit
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified  swap memory limit.
      *
      * @param int $limit
+     *
+     * @return self
      */
-    public function setSwapMemoryLimit($limit)
+    public function withSwapMemoryLimit($limit)
     {
-        $this->config['swap_memory_limit'] = (int)$limit;
+        $limit = $this->filterInteger($limit);
+        if ($limit === $this->config['swap_memory_limit']) {
+            return $this;
+        }
+
+        $clone = clone $this;
+        $clone->config['swap_memory_limit'] = $limit;
+
+        return $clone;
     }
 }
