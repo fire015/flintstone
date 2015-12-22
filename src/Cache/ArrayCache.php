@@ -14,7 +14,7 @@ namespace Flintstone\Cache;
 class ArrayCache implements CacheInterface
 {
     /**
-     * Cache data
+     * Cache data.
      *
      * @var array
      */

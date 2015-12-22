@@ -8,7 +8,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     public function testDefaultConfig()
     {
         $config = new Config();
-        $this->assertEquals(getcwd() . DIRECTORY_SEPARATOR, $config->getDir());
+        $this->assertEquals(getcwd().DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.dat', $config->getExt());
         $this->assertFalse($config->useGzip());
         $this->assertInstanceOf('Flintstone\Cache\ArrayCache', $config->getCache());
@@ -22,15 +22,15 @@ class ConfigTest extends PHPUnit_Framework_TestCase
             'dir' => __DIR__,
             'ext' => 'test',
             'gzip' => true,
-            'cache' => true,
+            'cache' => false,
             'formatter' => null,
             'swap_memory_limit' => 100,
         ));
 
-        $this->assertEquals(__DIR__ . DIRECTORY_SEPARATOR, $config->getDir());
+        $this->assertEquals(__DIR__.DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.test.gz', $config->getExt());
         $this->assertTrue($config->useGzip());
-        $this->assertInstanceOf('Flintstone\Cache\ArrayCache', $config->getCache());
+        $this->assertFalse($config->getCache());
         $this->assertInstanceOf('Flintstone\Formatter\SerializeFormatter', $config->getFormatter());
         $this->assertEquals(100, $config->getSwapMemoryLimit());
     }

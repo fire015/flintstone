@@ -82,10 +82,10 @@ class Config
     public function setDir($dir)
     {
         if (!is_dir($dir)) {
-            throw new Exception('Directory does not exist: ' . $dir);
+            throw new Exception('Directory does not exist: '.$dir);
         }
 
-        $this->config['dir'] = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
+        $this->config['dir'] = rtrim($dir, '/\\').DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -96,7 +96,7 @@ class Config
     public function getExt()
     {
         if ($this->useGzip()) {
-            return $this->config['ext'] . '.gz';
+            return $this->config['ext'].'.gz';
         }
 
         return $this->config['ext'];
@@ -110,7 +110,7 @@ class Config
     public function setExt($ext)
     {
         if ('.' != substr($ext, 0, 1)) {
-            $ext = '.' . $ext;
+            $ext = '.'.$ext;
         }
 
         $this->config['ext'] = $ext;
@@ -133,7 +133,7 @@ class Config
      */
     public function setGzip($gzip)
     {
-        $this->config['gzip'] = (bool)$gzip;
+        $this->config['gzip'] = (bool) $gzip;
     }
 
     /**
@@ -213,6 +213,6 @@ class Config
      */
     public function setSwapMemoryLimit($limit)
     {
-        $this->config['swap_memory_limit'] = (int)$limit;
+        $this->config['swap_memory_limit'] = (int) $limit;
     }
 }

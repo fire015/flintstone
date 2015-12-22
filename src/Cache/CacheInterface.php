@@ -18,7 +18,7 @@ interface CacheInterface
      *
      * @param string $key
      *
-     * @return boolean
+     * @return bool
      */
     public function contains($key);
 
@@ -35,7 +35,7 @@ interface CacheInterface
      * Set a key in the cache.
      *
      * @param string $key
-     * @param mixed $data
+     * @param mixed  $data
      */
     public function set($key, $data);
 
