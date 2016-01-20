@@ -12,11 +12,12 @@ The `FlinstoneDB` class has also been removed and `Flintstone\FlintstoneExceptio
 require 'vendor/autoload.php';
 
 use Flintstone\Flintstone;
+use Flintstone\FlintstoneException;
 
 try {
     $users = Flintstone::load('users', array('dir' => '/path/to/database/dir/'));
 }
-catch (Flintstone\FlintstoneException $e) {
+catch (FlintstoneException $e) {
 
 }
 ```
@@ -28,11 +29,12 @@ catch (Flintstone\FlintstoneException $e) {
 require 'vendor/autoload.php';
 
 use Flintstone\Flintstone;
+use Flintstone\Exception;
 
 try {
     $users = new Flintstone('users', array('dir' => '/path/to/database/dir/'));
 }
-catch (Flintstone\Exception $e) {
+catch (Exception $e) {
 
 }
 ```
