@@ -38,7 +38,7 @@ class Flintstone
      * Constructor.
      *
      * @param Database|string $database
-     * @param Config|array    $config
+     * @param Config|array $config
      */
     public function __construct($database, $config)
     {
@@ -140,7 +140,7 @@ class Flintstone
      * Set a key in the database.
      *
      * @param string $key
-     * @param mixed  $data
+     * @param mixed $data
      */
     public function set($key, $data)
     {
@@ -236,7 +236,7 @@ class Flintstone
      * Replace a key in the database.
      *
      * @param string $key
-     * @param mixed  $data
+     * @param mixed $data
      */
     protected function replace($key, $data)
     {
@@ -252,7 +252,7 @@ class Flintstone
                     $tmp->fwrite($this->getLineString($key, $data));
                 }
             } else {
-                $tmp->fwrite($line."\n");
+                $tmp->fwrite($line . "\n");
             }
         }
 
@@ -348,13 +348,13 @@ class Flintstone
      * Get the line string to write.
      *
      * @param string $key
-     * @param mixed  $data
+     * @param mixed $data
      *
      * @return string
      */
     protected function getLineString($key, $data)
     {
-        return $key.'='.$this->encodeData($data)."\n";
+        return $key . '=' . $this->encodeData($data) . "\n";
     }
 
     /**

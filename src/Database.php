@@ -74,7 +74,7 @@ class Database
     /**
      * Constructor.
      *
-     * @param string      $name
+     * @param string $name
      * @param Config|null $config
      */
     public function __construct($name, Config $config = null)
@@ -139,7 +139,7 @@ class Database
      */
     public function getPath()
     {
-        return $this->config->getDir().$this->getName().$this->config->getExt();
+        return $this->config->getDir() . $this->getName() . $this->config->getExt();
     }
 
     /**
@@ -156,15 +156,15 @@ class Database
         $path = $this->getPath();
 
         if (!is_file($path) && !@touch($path)) {
-            throw new Exception('Could not create file: '.$path);
+            throw new Exception('Could not create file: ' . $path);
         }
 
         if (!is_readable($path) || !is_writable($path)) {
-            throw new Exception('File does not have permission for read and write: '.$path);
+            throw new Exception('File does not have permission for read and write: ' . $path);
         }
 
         if ($this->getConfig()->useGzip()) {
-            $path = 'compress.zlib://'.$path;
+            $path = 'compress.zlib://' . $path;
         }
 
         $res = $this->fileAccessMode[$mode];
@@ -175,7 +175,7 @@ class Database
         }
 
         if (!$this->getConfig()->useGzip() && !$file->flock($res['operation'])) {
-            throw new Exception('Could not lock file: '.$path);
+            throw new Exception('Could not lock file: ' . $path);
         }
 
         return $file;

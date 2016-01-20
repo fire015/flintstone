@@ -51,7 +51,7 @@ Flintstone can store the following data types:
 
 |Name				|Type		|Default Value	|Description														|
 |---				|---		|---				|---														|
-|dir				|string				|''			|The directory where the database files are stored (this should be somewhere that is not web accessible) e.g. /path/to/database/			|
+|dir				|string				|the current working directory			|The directory where the database files are stored (this should be somewhere that is not web accessible) e.g. /path/to/database/			|
 |ext				|string				|.dat		|The database file extension to use							|
 |gzip				|boolean			|false		|Use gzip to compress the database							|
 |cache				|boolean or object	|true		|Whether to cache `get()` results for faster data retrieval								|
@@ -121,32 +121,10 @@ $users = new Flintstone('users', array(
 ));
 ```
 
-### Using cache
+### Changing the cache
 To speed up data retrieval Flintstone can store the results of `get()` in a cache store. By default this uses a simple array that only persist's for as long as the `Flintstone` object exists.
 
-If you want to use your own cache store (such as Memcached) you can pass a class as the `cache` option. Just make sure it implements `Doctrine\Common\Cache\Cache` and `Doctrine\Common\Cache\ClearableCache`.
-
-Here is an example using Memcached:
-
-```php
-<?php
-require 'vendor/autoload.php';
-
-use Flintstone\Flintstone;
-use Doctrine\Common\Cache\MemcachedCache;
-
-$memcached = new Memcached;
-$memcached->addServer('localhost', 11211);
-$cache = new MemcachedCache;
-$cache->setMemcached($memcached);
-
-$users = new Flintstone('users', array(
-	'dir' => __DIR__,
-	'cache' => $cache
-));
-```
-
-For a list of ready built cache store's see [doctrine/cache](https://github.com/doctrine/cache).
+If you want to use your own cache store (such as Memcached) you can pass a class as the `cache` option. Just make sure it implements `Flintstone\Cache\CacheInterface`.
 
 ### Who is using Flintstone?
 
