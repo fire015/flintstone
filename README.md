@@ -30,7 +30,7 @@ require 'vendor/autoload.php';
 
 use Flintstone\Flintstone;
 
-$users = Flintstone::load('users', array('dir' => '/path/to/database/dir/'));
+$users = new Flintstone('users', array('dir' => '/path/to/database/dir/'));
 ```
 
 ### Requirements
@@ -50,13 +50,13 @@ Flintstone can store the following data types:
 ### Options
 
 |Name				|Type		|Default Value	|Description														|
-|---				|---		|---					|---														|
-|dir				|string		|null					|the directory where the database files are stored			|
-|ext				|string		|.dat					|the database file extension to use							|
-|gzip				|boolean	|false					|use gzip to compress the database							|
-|cache				|boolean	|true					|store get() results in memory								|
-|formatter			|object		|SerializeFormatter		|the formatter class used to encode/decode data				|
-|swap_memory_limit	|integer	|1048576				|amount of memory to use before writing to a temporary file	|
+|---				|---		|---				|---														|
+|dir				|string				|the current working directory			|The directory where the database files are stored (this should be somewhere that is not web accessible) e.g. /path/to/database/			|
+|ext				|string				|.dat		|The database file extension to use							|
+|gzip				|boolean			|false		|Use gzip to compress the database							|
+|cache				|boolean or object	|true		|Whether to cache `get()` results for faster data retrieval								|
+|formatter			|null or object		|null		|The formatter class used to encode/decode data				|
+|swap_memory_limit	|integer			|2097152	|The amount of memory to use before writing to a temporary file	|
 
 
 ### Usage examples
@@ -66,8 +66,8 @@ Flintstone can store the following data types:
 $options = array('dir' => '/path/to/database/dir/');
 
 // Load the databases
-$users = Flintstone::load('users', $options);
-$settings = Flintstone::load('settings', $options);
+$users = new Flintstone('users', $options);
+$settings = new Flintstone('settings', $options);
 
 // Set keys
 $users->set('bob', array('email' => 'bob@site.com', 'password' => '123456'));
@@ -115,11 +115,16 @@ require 'vendor/autoload.php';
 use Flintstone\Flintstone;
 use Flintstone\Formatter\JsonFormatter;
 
-$users = Flintstone::load('users', array(
+$users = new Flintstone('users', array(
 	'dir' => __DIR__,
-	'formatter' => new JsonFormatter()
+	'formatter' => new JsonFormatter
 ));
 ```
+
+### Changing the cache
+To speed up data retrieval Flintstone can store the results of `get()` in a cache store. By default this uses a simple array that only persist's for as long as the `Flintstone` object exists.
+
+If you want to use your own cache store (such as Memcached) you can pass a class as the `cache` option. Just make sure it implements `Flintstone\Cache\CacheInterface`.
 
 ### Who is using Flintstone?
 

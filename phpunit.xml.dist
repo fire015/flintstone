@@ -12,7 +12,7 @@
 		 >
 	<filter>
 		<whitelist>
-			<directory>src/Flintstone</directory>
+			<directory>src</directory>
 		</whitelist>
 	</filter>
 

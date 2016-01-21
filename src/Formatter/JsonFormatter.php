@@ -1,15 +1,16 @@
 <?php
 
-/**
- * Flintstone - A key/value database store using flat files for PHP
- * Copyright (c) 2014 Jason M
+/*
+ * This file is part of the Flintstone package.
+ *
+ * (c) Jason M <emailfire@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
  */
 
 namespace Flintstone\Formatter;
 
-/**
- * Encodes/decodes data into JSON
- */
 class JsonFormatter implements FormatterInterface
 {
     /**

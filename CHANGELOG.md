@@ -1,5 +1,13 @@
 Change Log
 ==========
+### 20/01/2016 - 2.0
+* Major refactor, class names have changed and the whole codebase is much more extensible
+* Removed the static `load` and `unload` methods and the `FlinstoneDB` class
+* The `replace` method is no longer public
+* The `getFile` method has been removed
+* Default swap memory limit has been increased to 2MB
+* Ability to pass any instance for cache that implements `Flintstone\Cache\CacheInterface`
+
 ### 25/03/2015 - 1.9
 * Added `getAll` method and some refactoring
 
