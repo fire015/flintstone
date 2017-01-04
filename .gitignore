@@ -1,5 +1,5 @@
-vendor
+/vendor
+/docs
+/build
 composer.lock
-docs
-build
 .idea
