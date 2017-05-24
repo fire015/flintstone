@@ -208,4 +208,22 @@ class Database
 
         $file = null;
     }
+
+    /**
+     * Read lines from database file.
+     *
+     * @return \Generator
+     */
+    public function readFromFile()
+    {
+        $file = $this->openFile(static::FILE_READ);
+
+        try {
+            foreach ($file as $line) {
+                yield new Line($line);
+            }
+        } finally {
+            $this->closeFile($file);
+        }
+    }
 }

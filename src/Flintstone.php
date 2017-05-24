@@ -114,19 +114,16 @@ class Flintstone
         }
 
         // Fetch the key from database
-        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+        $file = $this->getDatabase()->readFromFile();
         $data = false;
 
-        foreach ($filePointer as $line) {
-            $data = $this->getDataFromLine($line, $key);
-
-            if ($data !== false) {
-                $data = $this->decodeData($data);
+        foreach ($file as $line) {
+            /** @var Line $line */
+            if ($line->getKey() == $key) {
+                $data = $this->decodeData($line->getData());
                 break;
             }
         }
-
-        $this->getDatabase()->closeFile($filePointer);
 
         // Save the data to cache
         if ($cache && $data !== false) {
@@ -201,13 +198,12 @@ class Flintstone
     public function getKeys()
     {
         $keys = [];
-        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+        $file = $this->getDatabase()->readFromFile();
 
-        foreach ($filePointer as $line) {
-            $keys[] = $this->getKeyFromLine($line);
+        foreach ($file as $line) {
+            /** @var Line $line */
+            $keys[] = $line->getKey();
         }
-
-        $this->getDatabase()->closeFile($filePointer);
 
         return $keys;
     }
@@ -220,14 +216,12 @@ class Flintstone
     public function getAll()
     {
         $data = [];
-        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+        $file = $this->getDatabase()->readFromFile();
 
-        foreach ($filePointer as $line) {
-            $pieces = $this->getLinePieces($line);
-            $data[$pieces[0]] = $this->decodeData($pieces[1]);
+        foreach ($file as $line) {
+            /** @var Line $line */
+            $data[$line->getKey()] = $this->decodeData($line->getData());
         }
-
-        $this->getDatabase()->closeFile($filePointer);
 
         return $data;
     }
@@ -285,21 +279,6 @@ class Flintstone
     protected function getLinePieces($line)
     {
         return explode('=', $line, 2);
-    }
-
-    /**
-     * Retrieve data from a given line for a specific key.
-     *
-     * @param string $line
-     * @param string $key
-     *
-     * @return string|bool
-     */
-    protected function getDataFromLine($line, $key)
-    {
-        $pieces = $this->getLinePieces($line);
-
-        return ($pieces[0] == $key) ? $pieces[1] : false;
     }
 
     /**
