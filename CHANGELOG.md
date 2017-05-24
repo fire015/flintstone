@@ -1,5 +1,12 @@
 Change Log
 ==========
+
+### 24/05/2017 - 2.1
+* Bump minimum PHP version to 5.6
+* Tidy up of Flintstone class, moved some code into `Database`
+* Added `Line` and `Validation` classes
+* Closed off public methods `Database::openFile` and `Database::closeFile`
+
 ### 20/01/2016 - 2.0
 * Major refactor, class names have changed and the whole codebase is much more extensible
 * Removed the static `load` and `unload` methods and the `FlinstoneDB` class
