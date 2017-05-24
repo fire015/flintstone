@@ -6,8 +6,7 @@ php:
   - 7.0
   - 7.1
 
-before_script:
-  - travis_retry composer install --no-interaction
+install:
+  - travis_retry composer install --no-interaction --prefer-dist --no-suggest
 
-script:
-  - phpunit --coverage-text
+script: vendor/bin/phpunit
