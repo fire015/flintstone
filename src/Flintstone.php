@@ -18,7 +18,7 @@ class Flintstone
      *
      * @var string
      */
-    const VERSION = '2.0';
+    const VERSION = '2.1';
 
     /**
      * Database class.
@@ -147,14 +147,11 @@ class Flintstone
         // If the key already exists we need to replace it
         if ($this->get($key) !== false) {
             $this->replace($key, $data);
-
             return;
         }
 
         // Write the key to the database
-        $filePointer = $this->getDatabase()->openFile(Database::FILE_APPEND);
-        $filePointer->fwrite($this->getLineString($key, $data));
-        $this->getDatabase()->closeFile($filePointer);
+        $this->getDatabase()->appendToFile($this->getLineString($key, $data));
 
         // Delete the key from cache
         if ($cache = $this->getConfig()->getCache()) {
@@ -181,8 +178,7 @@ class Flintstone
      */
     public function flush()
     {
-        $filePointer = $this->getDatabase()->openFile(Database::FILE_WRITE);
-        $this->getDatabase()->closeFile($filePointer);
+        $this->getDatabase()->flushFile();
 
         // Flush the cache
         if ($cache = $this->getConfig()->getCache()) {
@@ -235,64 +231,29 @@ class Flintstone
     protected function replace($key, $data)
     {
         // Write a new database to a temporary file
-        $tmp = $this->getDatabase()->openTempFile();
-        $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
+        $tmpFile = $this->getDatabase()->openTempFile();
+        $file = $this->getDatabase()->readFromFile();
 
-        foreach ($filePointer as $line) {
-            $lineKey = $this->getKeyFromLine($line);
-
-            if ($lineKey == $key) {
+        foreach ($file as $line) {
+            /** @var Line $line */
+            if ($line->getKey() == $key) {
                 if ($data !== false) {
-                    $tmp->fwrite($this->getLineString($key, $data));
+                    $tmpFile->fwrite($this->getLineString($key, $data));
                 }
             } else {
-                $tmp->fwrite($line . "\n");
+                $tmpFile->fwrite($line->getLine() . "\n");
             }
         }
 
-        $this->getDatabase()->closeFile($filePointer);
-        $tmp->rewind();
+        $tmpFile->rewind();
 
         // Overwrite the database with the temporary file
-        $filePointer = $this->getDatabase()->openFile(Database::FILE_WRITE);
-
-        foreach ($tmp as $line) {
-            $filePointer->fwrite($line);
-        }
-
-        $this->getDatabase()->closeFile($filePointer);
-        $tmp = null;
+        $this->getDatabase()->writeTempToFile($tmpFile);
 
         // Delete the key from cache
         if ($cache = $this->getConfig()->getCache()) {
             $cache->delete($key);
         }
-    }
-
-    /**
-     * Retrieve the pieces from a given line.
-     *
-     * @param string $line
-     *
-     * @return array
-     */
-    protected function getLinePieces($line)
-    {
-        return explode('=', $line, 2);
-    }
-
-    /**
-     * Retrieve key from a given line.
-     *
-     * @param string $line
-     *
-     * @return string
-     */
-    protected function getKeyFromLine($line)
-    {
-        $pieces = $this->getLinePieces($line);
-
-        return $pieces[0];
     }
 
     /**

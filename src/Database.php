@@ -148,7 +148,7 @@ class Database
      *
      * @return SplFileObject
      */
-    public function openFile($mode)
+    protected function openFile($mode)
     {
         $path = $this->getPath();
 
@@ -162,10 +162,6 @@ class Database
 
         if ($this->getConfig()->useGzip()) {
             $path = 'compress.zlib://' . $path;
-        }
-
-        if (!array_key_exists($mode, $this->fileAccessMode)) {
-            throw new Exception('Invalid file mode');
         }
 
         $res = $this->fileAccessMode[$mode];
@@ -199,7 +195,7 @@ class Database
      *
      * @throws Exception
      */
-    public function closeFile(SplFileObject &$file)
+    protected function closeFile(SplFileObject &$file)
     {
         if (!$this->getConfig()->useGzip() && !$file->flock(LOCK_UN)) {
             $file = null;
@@ -210,7 +206,7 @@ class Database
     }
 
     /**
-     * Read lines from database file.
+     * Read lines from the database file.
      *
      * @return \Generator
      */
@@ -225,5 +221,43 @@ class Database
         } finally {
             $this->closeFile($file);
         }
+    }
+
+    /**
+     * Append a line to the database file.
+     *
+     * @param string $line
+     */
+    public function appendToFile($line)
+    {
+        $file = $this->openFile(static::FILE_APPEND);
+        $file->fwrite($line);
+        $this->closeFile($file);
+    }
+
+    /**
+     * Flush the database file.
+     */
+    public function flushFile()
+    {
+        $file = $this->openFile(static::FILE_WRITE);
+        $this->closeFile($file);
+    }
+
+    /**
+     * Write temporary file contents to database file.
+     *
+     * @param SplTempFileObject $tmpFile
+     */
+    public function writeTempToFile(SplTempFileObject $tmpFile)
+    {
+        $file = $this->openFile(static::FILE_WRITE);
+
+        foreach ($tmpFile as $line) {
+            $file->fwrite($line);
+        }
+
+        $this->closeFile($file);
+        $tmpFile = null;
     }
 }
