@@ -7,6 +7,7 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
 {
     /**
      * @expectedException Flintstone\Exception
+     * @expectedExceptionMessage Invalid characters in database name
      */
     public function testDatabaseInvalidName()
     {
@@ -16,15 +17,15 @@ class DatabaseTest extends PHPUnit_Framework_TestCase
 
     public function testGetDatabaseAndConfig()
     {
-        $config = new Config(array(
+        $config = new Config([
             'dir' => __DIR__,
-        ));
+        ]);
 
         $path = __DIR__.DIRECTORY_SEPARATOR.'test.dat';
 
         $db = new Database('test', $config);
         $this->assertEquals('test', $db->getName());
-        $this->assertInstanceOf('Flintstone\Config', $db->getConfig());
+        $this->assertInstanceOf(Config::class, $db->getConfig());
         $this->assertEquals($path, $db->getPath());
     }
 }

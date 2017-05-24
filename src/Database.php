@@ -42,20 +42,20 @@ class Database
      *
      * @var array
      */
-    protected $fileAccessMode = array(
-        self::FILE_READ => array(
+    protected $fileAccessMode = [
+        self::FILE_READ => [
             'mode' => 'rb',
             'operation' => LOCK_SH,
-        ),
-        self::FILE_WRITE => array(
+        ],
+        self::FILE_WRITE => [
             'mode' => 'wb',
             'operation' => LOCK_EX,
-        ),
-        self::FILE_APPEND => array(
+        ],
+        self::FILE_APPEND => [
             'mode' => 'ab',
             'operation' => LOCK_EX,
-        ),
-    );
+        ],
+    ];
 
     /**
      * Database name.
@@ -105,10 +105,7 @@ class Database
      */
     public function setName($name)
     {
-        if (empty($name) || !preg_match('/^[\w-]+$/', $name)) {
-            throw new Exception('Invalid characters in database name');
-        }
-
+        Validation::validateDatabaseName($name);
         $this->name = $name;
     }
 
@@ -165,6 +162,10 @@ class Database
 
         if ($this->getConfig()->useGzip()) {
             $path = 'compress.zlib://' . $path;
+        }
+
+        if (!array_key_exists($mode, $this->fileAccessMode)) {
+            throw new Exception('Invalid file mode');
         }
 
         $res = $this->fileAccessMode[$mode];

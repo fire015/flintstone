@@ -39,11 +39,11 @@ class SerializeFormatter implements FormatterInterface
      */
     protected function preserveLines($data, $reverse)
     {
-        $search = array("\n", "\r");
-        $replace = array('\\n', '\\r');
+        $search = ["\n", "\r"];
+        $replace = ['\\n', '\\r'];
         if ($reverse) {
-            $search = array('\\n', '\\r');
-            $replace = array("\n", "\r");
+            $search = ['\\n', '\\r'];
+            $replace = ["\n", "\r"];
         }
 
         if (is_string($data)) {

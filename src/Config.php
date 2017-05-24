@@ -23,14 +23,14 @@ class Config
      *
      * @var array
      */
-    protected $config = array();
+    protected $config = [];
 
     /**
      * Constructor.
      *
      * @param array $config
      */
-    public function __construct(array $config = array())
+    public function __construct(array $config = [])
     {
         $config = $this->normalizeConfig($config);
         $this->setDir($config['dir']);
@@ -50,14 +50,14 @@ class Config
      */
     protected function normalizeConfig(array $config)
     {
-        $defaultConfig = array(
+        $defaultConfig = [
             'dir' => getcwd(),
             'ext' => '.dat',
             'gzip' => false,
             'cache' => true,
             'formatter' => null,
             'swap_memory_limit' => 2097152,    // 2MB
-        );
+        ];
 
         return array_replace($defaultConfig, $config);
     }

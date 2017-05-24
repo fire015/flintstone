@@ -104,7 +104,7 @@ class Flintstone
      */
     public function get($key)
     {
-        $this->validateKey($key);
+        Validation::validateKey($key);
 
         // Fetch the key from cache
         if ($cache = $this->getConfig()->getCache()) {
@@ -144,8 +144,8 @@ class Flintstone
      */
     public function set($key, $data)
     {
-        $this->validateKey($key);
-        $this->validateData($data);
+        Validation::validateKey($key);
+        Validation::validateData($data);
 
         // If the key already exists we need to replace it
         if ($this->get($key) !== false) {
@@ -172,7 +172,7 @@ class Flintstone
      */
     public function delete($key)
     {
-        $this->validateKey($key);
+        Validation::validateKey($key);
 
         if ($this->get($key) !== false) {
             $this->replace($key, false);
@@ -200,7 +200,7 @@ class Flintstone
      */
     public function getKeys()
     {
-        $keys = array();
+        $keys = [];
         $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
 
         foreach ($filePointer as $line) {
@@ -219,7 +219,7 @@ class Flintstone
      */
     public function getAll()
     {
-        $data = array();
+        $data = [];
         $filePointer = $this->getDatabase()->openFile(Database::FILE_READ);
 
         foreach ($filePointer as $line) {
@@ -272,34 +272,6 @@ class Flintstone
         // Delete the key from cache
         if ($cache = $this->getConfig()->getCache()) {
             $cache->delete($key);
-        }
-    }
-
-    /**
-     * Validate the key.
-     *
-     * @param string $key
-     *
-     * @throws Exception
-     */
-    protected function validateKey($key)
-    {
-        if (empty($key) || !preg_match('/^[\w-]+$/', $key)) {
-            throw new Exception('Invalid characters in key');
-        }
-    }
-
-    /**
-     * Check the data type is valid.
-     *
-     * @param mixed $data the data
-     *
-     * @throws Exception
-     */
-    protected function validateData($data)
-    {
-        if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
-            throw new Exception('Invalid data type');
         }
     }
 

@@ -11,27 +11,27 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(getcwd().DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.dat', $config->getExt());
         $this->assertFalse($config->useGzip());
-        $this->assertInstanceOf('Flintstone\Cache\ArrayCache', $config->getCache());
-        $this->assertInstanceOf('Flintstone\Formatter\SerializeFormatter', $config->getFormatter());
+        $this->assertInstanceOf(\Flintstone\Cache\ArrayCache::class, $config->getCache());
+        $this->assertInstanceOf(\Flintstone\Formatter\SerializeFormatter::class, $config->getFormatter());
         $this->assertEquals(2097152, $config->getSwapMemoryLimit());
     }
 
     public function testConfigConstructorOptions()
     {
-        $config = new Config(array(
+        $config = new Config([
             'dir' => __DIR__,
             'ext' => 'test',
             'gzip' => true,
             'cache' => false,
             'formatter' => null,
             'swap_memory_limit' => 100,
-        ));
+        ]);
 
         $this->assertEquals(__DIR__.DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.test.gz', $config->getExt());
         $this->assertTrue($config->useGzip());
         $this->assertFalse($config->getCache());
-        $this->assertInstanceOf('Flintstone\Formatter\SerializeFormatter', $config->getFormatter());
+        $this->assertInstanceOf(\Flintstone\Formatter\SerializeFormatter::class, $config->getFormatter());
         $this->assertEquals(100, $config->getSwapMemoryLimit());
     }
 
@@ -39,7 +39,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     {
         $config = new Config();
         $config->setFormatter(new JsonFormatter());
-        $this->assertInstanceOf('Flintstone\Formatter\JsonFormatter', $config->getFormatter());
+        $this->assertInstanceOf(JsonFormatter::class, $config->getFormatter());
     }
 
     /**
