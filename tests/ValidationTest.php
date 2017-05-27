@@ -10,7 +10,7 @@ class ValidationTest extends PHPUnit_Framework_TestCase
      */
     public function testValidateKey()
     {
-        Validation::validateKey('test!123');
+        Validation::validateKey('test 123');
     }
 
     /**
@@ -28,6 +28,6 @@ class ValidationTest extends PHPUnit_Framework_TestCase
      */
     public function testValidateDatabaseName()
     {
-        Validation::validateDatabaseName('test!123');
+        Validation::validateDatabaseName('test 123');
     }
 }

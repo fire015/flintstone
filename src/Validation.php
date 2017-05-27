@@ -13,7 +13,7 @@ class Validation
      */
     public static function validateKey($key)
     {
-        if (empty($key) || !preg_match('/^[\w-]+$/', $key)) {
+        if (empty($key) || !preg_match('/^[\S-]+$/', $key)) {
             throw new Exception('Invalid characters in key');
         }
     }

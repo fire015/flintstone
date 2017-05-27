@@ -23,7 +23,7 @@ class FlintstoneTest extends PHPUnit_Framework_TestCase
     public function testKeyInvalidName()
     {
         $db = new Flintstone('test', []);
-        $db->get('test!123');
+        $db->get('test 123');
     }
 
     /**
