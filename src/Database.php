@@ -249,7 +249,7 @@ class Database
      *
      * @param SplTempFileObject $tmpFile
      */
-    public function writeTempToFile(SplTempFileObject $tmpFile)
+    public function writeTempToFile(SplTempFileObject &$tmpFile)
     {
         $file = $this->openFile(static::FILE_WRITE);
 
