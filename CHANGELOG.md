@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+### 09/06/2017 - 2.1.1
+* Update `Database::writeTempToFile` to correctly close the file pointer and free up memory
+
 ### 24/05/2017 - 2.1
 * Bump minimum PHP version to 5.6
 * Tidy up of Flintstone class, moved some code into `Database`
