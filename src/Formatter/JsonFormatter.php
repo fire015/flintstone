@@ -18,7 +18,7 @@ class JsonFormatter implements FormatterInterface
      */
     public function encode($data)
     {
-        return json_encode($data);
+        return json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 
     /**
