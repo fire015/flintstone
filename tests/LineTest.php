@@ -2,7 +2,7 @@
 
 use Flintstone\Line;
 
-class LineTest extends PHPUnit_Framework_TestCase
+class LineTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var Line

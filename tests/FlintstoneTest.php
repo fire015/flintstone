@@ -3,7 +3,7 @@
 use Flintstone\Flintstone;
 use Flintstone\Formatter\JsonFormatter;
 
-class FlintstoneTest extends PHPUnit_Framework_TestCase
+class FlintstoneTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetDatabaseAndConfig()
     {

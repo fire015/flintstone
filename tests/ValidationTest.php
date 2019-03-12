@@ -2,7 +2,7 @@
 
 use Flintstone\Validation;
 
-class ValidationTest extends PHPUnit_Framework_TestCase
+class ValidationTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @expectedException Flintstone\Exception

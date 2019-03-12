@@ -1,31 +1,46 @@
 <?php
 
-/*
- * This file is part of the Flintstone package.
- *
- * (c) Jason M <emailfire@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 namespace Flintstone\Formatter;
+
+use Flintstone\Exception;
 
 class JsonFormatter implements FormatterInterface
 {
     /**
-     * {@inheritdoc}
+     * @var bool
      */
-    public function encode($data)
+    private $assoc;
+
+    public function __construct(bool $assoc = true)
     {
-        return json_encode($data);
+        $this->assoc = $assoc;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function decode($data)
+    public function encode($data): string
     {
-        return json_decode($data, true);
+        $result = json_encode($data);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $result;
+        }
+
+        throw new Exception(json_last_error_msg());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function decode(string $data)
+    {
+        $result = json_decode($data, $this->assoc);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $result;
+        }
+
+        throw new Exception(json_last_error_msg());
     }
 }

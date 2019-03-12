@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the Flintstone package.
- *
- * (c) Jason M <emailfire@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 namespace Flintstone\Formatter;
 
 interface FormatterInterface
@@ -20,7 +11,7 @@ interface FormatterInterface
      *
      * @return string
      */
-    public function encode($data);
+    public function encode($data): string;
 
     /**
      * Decode a string into data.
@@ -29,5 +20,5 @@ interface FormatterInterface
      *
      * @return mixed
      */
-    public function decode($data);
+    public function decode(string $data);
 }
