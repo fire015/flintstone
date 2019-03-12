@@ -2,7 +2,7 @@
 
 use Flintstone\Formatter\SerializeFormatter;
 
-class SerializeFormatterTest extends PHPUnit_Framework_TestCase
+class SerializeFormatterTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var SerializeFormatter
@@ -14,16 +14,31 @@ class SerializeFormatterTest extends PHPUnit_Framework_TestCase
         $this->formatter = new SerializeFormatter();
     }
 
-    public function testEncode()
+    /**
+     * @test
+     * @dataProvider validData
+     */
+    public function encodesValidData($originalValue, $encodedValue)
     {
-        $data = $this->formatter->encode(["test", "new\nline"]);
-        $this->assertEquals('a:2:{i:0;s:4:"test";i:1;s:9:"new\nline";}', $data);
+        $this->assertSame($encodedValue, $this->formatter->encode($originalValue));
     }
 
-    public function testDecode()
+    /**
+     * @test
+     * @dataProvider validData
+     */
+    public function decodesValidData($originalValue, $encodedValue)
     {
-        $data = $this->formatter->decode('a:2:{i:0;s:4:"test";i:1;s:9:"new\nline";}');
-        $this->assertTrue(is_array($data));
-        $this->assertEquals(["test", "new\nline"], $data);
+        $this->assertSame($originalValue, $this->formatter->decode($encodedValue));
+    }
+
+    public function validData(): array
+    {
+        return [
+            [null, 'N;'],
+            [1, 'i:1;'],
+            ['foo', 's:3:"foo";'],
+            [["test", "new\nline"], 'a:2:{i:0;s:4:"test";i:1;s:9:"new\nline";}'],
+        ];
     }
 }

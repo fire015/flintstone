@@ -2,7 +2,7 @@
 
 use Flintstone\Formatter\JsonFormatter;
 
-class JsonFormatterTest extends PHPUnit_Framework_TestCase
+class JsonFormatterTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var JsonFormatter
@@ -14,16 +14,60 @@ class JsonFormatterTest extends PHPUnit_Framework_TestCase
         $this->formatter = new JsonFormatter();
     }
 
-    public function testEncode()
+    /**
+     * @test
+     * @dataProvider validData
+     */
+    public function encodesValidData($originalValue, $encodedValue)
     {
-        $data = $this->formatter->encode(["test", "new\nline"]);
-        $this->assertEquals('["test","new\nline"]', $data);
+        $this->assertSame($encodedValue, $this->formatter->encode($originalValue));
     }
 
-    public function testDecode()
+    /**
+     * @test
+     * @dataProvider validData
+     */
+    public function decodesValidData($originalValue, $encodedValue)
     {
-        $data = $this->formatter->decode('["test","new\nline"]');
-        $this->assertTrue(is_array($data));
-        $this->assertEquals(["test", "new\nline"], $data);
+        $this->assertSame($originalValue, $this->formatter->decode($encodedValue));
+    }
+
+    /**
+     * @test
+     */
+    public function decodesAnObject()
+    {
+        $originalValue = (object)['foo' => 'bar'];
+        $formatter = new JsonFormatter(false);
+        $encodedValue = $formatter->encode($originalValue);
+        $this->assertEquals($originalValue, $formatter->decode($encodedValue));
+    }
+
+    /**
+     * @test
+     * @expectedException \Flintstone\Exception
+     */
+    public function encodingInvalidDataThrowsException()
+    {
+        $this->formatter->encode(chr(241));
+    }
+
+    /**
+     * @test
+     * @expectedException \Flintstone\Exception
+     */
+    public function decodingInvalidDataThrowsException()
+    {
+        $this->formatter->decode('{');
+    }
+
+    public function validData(): array
+    {
+        return [
+            [null, 'null'],
+            [1, '1'],
+            ['foo', '"foo"'],
+            [["test", "new\nline"], '["test","new\nline"]'],
+        ];
     }
 }

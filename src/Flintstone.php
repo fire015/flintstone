@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the Flintstone package.
- *
- * (c) Jason M <emailfire@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 namespace Flintstone;
 
 class Flintstone
@@ -18,7 +9,7 @@ class Flintstone
      *
      * @var string
      */
-    const VERSION = '2.1.1';
+    const VERSION = '2.2';
 
     /**
      * Database class.
@@ -59,7 +50,7 @@ class Flintstone
      *
      * @return Database
      */
-    public function getDatabase()
+    public function getDatabase(): Database
     {
         return $this->database;
     }
@@ -79,7 +70,7 @@ class Flintstone
      *
      * @return Config
      */
-    public function getConfig()
+    public function getConfig(): Config
     {
         return $this->config;
     }
@@ -102,7 +93,7 @@ class Flintstone
      *
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key)
     {
         Validation::validateKey($key);
 
@@ -139,10 +130,9 @@ class Flintstone
      * @param string $key
      * @param mixed $data
      */
-    public function set($key, $data)
+    public function set(string $key, $data)
     {
         Validation::validateKey($key);
-        Validation::validateData($data);
 
         // If the key already exists we need to replace it
         if ($this->get($key) !== false) {
@@ -164,7 +154,7 @@ class Flintstone
      *
      * @param string $key
      */
-    public function delete($key)
+    public function delete(string $key)
     {
         Validation::validateKey($key);
 
@@ -191,7 +181,7 @@ class Flintstone
      *
      * @return array
      */
-    public function getKeys()
+    public function getKeys(): array
     {
         $keys = [];
         $file = $this->getDatabase()->readFromFile();
@@ -209,7 +199,7 @@ class Flintstone
      *
      * @return array
      */
-    public function getAll()
+    public function getAll(): array
     {
         $data = [];
         $file = $this->getDatabase()->readFromFile();
@@ -228,7 +218,7 @@ class Flintstone
      * @param string $key
      * @param mixed $data
      */
-    protected function replace($key, $data)
+    protected function replace(string $key, $data)
     {
         // Write a new database to a temporary file
         $tmpFile = $this->getDatabase()->openTempFile();
@@ -264,7 +254,7 @@ class Flintstone
      *
      * @return string
      */
-    protected function getLineString($key, $data)
+    protected function getLineString(string $key, $data): string
     {
         return $key . '=' . $this->encodeData($data) . "\n";
     }
@@ -276,7 +266,7 @@ class Flintstone
      *
      * @return mixed
      */
-    protected function decodeData($data)
+    protected function decodeData(string $data)
     {
         return $this->getConfig()->getFormatter()->decode($data);
     }
@@ -288,7 +278,7 @@ class Flintstone
      *
      * @return string
      */
-    protected function encodeData($data)
+    protected function encodeData($data): string
     {
         return $this->getConfig()->getFormatter()->encode($data);
     }

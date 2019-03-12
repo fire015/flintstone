@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the Flintstone package.
- *
- * (c) Jason M <emailfire@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 namespace Flintstone\Formatter;
 
 class SerializeFormatter implements FormatterInterface
@@ -16,7 +7,7 @@ class SerializeFormatter implements FormatterInterface
     /**
      * {@inheritdoc}
      */
-    public function encode($data)
+    public function encode($data): string
     {
         return serialize($this->preserveLines($data, false));
     }
@@ -24,7 +15,7 @@ class SerializeFormatter implements FormatterInterface
     /**
      * {@inheritdoc}
      */
-    public function decode($data)
+    public function decode(string $data)
     {
         return $this->preserveLines(unserialize($data), true);
     }
@@ -37,10 +28,11 @@ class SerializeFormatter implements FormatterInterface
      *
      * @return mixed
      */
-    protected function preserveLines($data, $reverse)
+    protected function preserveLines($data, bool $reverse)
     {
         $search = ["\n", "\r"];
         $replace = ['\\n', '\\r'];
+
         if ($reverse) {
             $search = ['\\n', '\\r'];
             $replace = ["\n", "\r"];

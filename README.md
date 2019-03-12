@@ -35,17 +35,11 @@ $users = new Flintstone('users', ['dir' => '/path/to/database/dir/']);
 
 ### Requirements
 
-- PHP 5.6+
+- PHP 7.0+
 
 ### Data types
 
-Flintstone can store the following data types:
-
-* Strings
-* Integers
-* Floats
-* Arrays
-* Null
+Flintstone can store any data type that can be formatted into a string. By default this uses `serialize()`. See [Changing the formatter](#changing-the-formatter) for more details.
 
 ### Options
 
@@ -64,40 +58,24 @@ Flintstone can store the following data types:
 ```php
 <?php
 
-// Set options
-$options = ['dir' => '/path/to/database/dir/'];
+// Load a database
+$users = new Flintstone('users', ['dir' => '/path/to/database/dir/']);
 
-// Load the databases
-$users = new Flintstone('users', $options);
-$settings = new Flintstone('settings', $options);
-
-// Set keys
+// Set a key
 $users->set('bob', ['email' => 'bob@site.com', 'password' => '123456']);
-$users->set('joe', ['email' => 'joe@site.com', 'password' => 'test']);
-$settings->set('site_offline', 1);
-$settings->set('site_back', '3 days');
 
-// Retrieve keys
+// Get a key
 $user = $users->get('bob');
 echo 'Bob, your email is ' . $user['email'];
 
-$offline = $settings->get('site_offline');
-if ($offline == 1) {
-    echo 'Sorry, the website is offline<br />';
-    echo 'We will be back in ' . $settings->get('site_back');
-}
-
 // Retrieve all key names
-$keys = $users->getKeys(); // returns array('bob', 'joe', ...)
+$keys = $users->getKeys(); // returns array('bob')
 
-foreach ($keys as $username) {
-    $user = $users->get($username);
-    echo $username.', your email is ' . $user['email'];
-    echo $username.', your password is ' . $user['password'];
-}
+// Retrieve all data
+$data = $users->getAll(); // returns array('bob' => array('email' => 'bob@site.com', 'password' => '123456'));
 
 // Delete a key
-$users->delete('joe');
+$users->delete('bob');
 
 // Flush the database
 $users->flush();

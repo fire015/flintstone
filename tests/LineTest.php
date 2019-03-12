@@ -2,7 +2,7 @@
 
 use Flintstone\Line;
 
-class LineTest extends PHPUnit_Framework_TestCase
+class LineTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var Line
@@ -14,22 +14,34 @@ class LineTest extends PHPUnit_Framework_TestCase
         $this->line = new Line('foo=bar');
     }
 
-    public function testGetLine()
+    /**
+     * @test
+     */
+    public function canGetLine()
     {
         $this->assertEquals('foo=bar', $this->line->getLine());
     }
 
-    public function testGetKey()
+    /**
+     * @test
+     */
+    public function canGetKey()
     {
         $this->assertEquals('foo', $this->line->getKey());
     }
 
-    public function testGetData()
+    /**
+     * @test
+     */
+    public function canGetData()
     {
         $this->assertEquals('bar', $this->line->getData());
     }
 
-    public function testMultipleEquals()
+    /**
+     * @test
+     */
+    public function canGetKeyAndDataWithMultipleEquals()
     {
         $line = new Line('foo=bar=baz');
         $this->assertEquals('foo', $line->getKey());

@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+### 12/03/2019 - 2.2
+* Bump minimum PHP version to 7.0
+* Update PHPUnit to version 6
+* Removed data type validation for storing
+* Added param and return types
+
 ### 09/06/2017 - 2.1.1
 * Update `Database::writeTempToFile` to correctly close the file pointer and free up memory
 

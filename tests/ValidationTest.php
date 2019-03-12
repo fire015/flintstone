@@ -2,31 +2,24 @@
 
 use Flintstone\Validation;
 
-class ValidationTest extends PHPUnit_Framework_TestCase
+class ValidationTest extends \PHPUnit\Framework\TestCase
 {
     /**
+     * @test
      * @expectedException Flintstone\Exception
      * @expectedExceptionMessage Invalid characters in key
      */
-    public function testValidateKey()
+    public function validateKey()
     {
         Validation::validateKey('test!123');
     }
 
     /**
-     * @expectedException Flintstone\Exception
-     * @expectedExceptionMessage Invalid data type
-     */
-    public function testValidateData()
-    {
-        Validation::validateData(new self());
-    }
-
-    /**
+     * @test
      * @expectedException Flintstone\Exception
      * @expectedExceptionMessage Invalid characters in database name
      */
-    public function testValidateDatabaseName()
+    public function validateDatabaseName()
     {
         Validation::validateDatabaseName('test!123');
     }

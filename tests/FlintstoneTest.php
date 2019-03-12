@@ -1,9 +1,11 @@
 <?php
 
+use Flintstone\Config;
+use Flintstone\Database;
 use Flintstone\Flintstone;
 use Flintstone\Formatter\JsonFormatter;
 
-class FlintstoneTest extends PHPUnit_Framework_TestCase
+class FlintstoneTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetDatabaseAndConfig()
     {
@@ -12,31 +14,25 @@ class FlintstoneTest extends PHPUnit_Framework_TestCase
             'cache' => false,
         ]);
 
-        $this->assertInstanceOf(\Flintstone\Database::class, $db->getDatabase());
-        $this->assertInstanceOf(\Flintstone\Config::class, $db->getConfig());
+        $this->assertInstanceOf(Database::class, $db->getDatabase());
+        $this->assertInstanceOf(Config::class, $db->getConfig());
     }
 
     /**
+     * @test
      * @expectedException \Flintstone\Exception
      * @expectedExceptionMessage Invalid characters in key
      */
-    public function testKeyInvalidName()
+    public function keyHasInvalidName()
     {
         $db = new Flintstone('test', []);
         $db->get('test!123');
     }
 
     /**
-     * @expectedException \Flintstone\Exception
-     * @expectedExceptionMessage Invalid data type
+     * @test
      */
-    public function testKeyInvalidData()
-    {
-        $db = new Flintstone('test', []);
-        $db->set('test', new self());
-    }
-
-    public function testOperations()
+    public function canRunAllOperations()
     {
         $this->runOperationsTests([
             'dir' => __DIR__,
@@ -58,7 +54,7 @@ class FlintstoneTest extends PHPUnit_Framework_TestCase
         ]);
     }
 
-    protected function runOperationsTests($config)
+    private function runOperationsTests(array $config)
     {
         $db = new Flintstone('test', $config);
         $arr = ['foo' => "new\nline"];
