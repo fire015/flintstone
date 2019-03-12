@@ -14,21 +14,30 @@ class ArrayCacheTest extends \PHPUnit\Framework\TestCase
         $this->cache = new ArrayCache();
     }
 
-    public function testGetAndSet()
+    /**
+     * @test
+     */
+    public function canGetAndSet()
     {
         $this->cache->set('foo', 'bar');
         $this->assertTrue($this->cache->contains('foo'));
         $this->assertEquals('bar', $this->cache->get('foo'));
     }
 
-    public function testDelete()
+    /**
+     * @test
+     */
+    public function canDelete()
     {
         $this->cache->set('foo', 'bar');
         $this->cache->delete('foo');
         $this->assertFalse($this->cache->contains('foo'));
     }
 
-    public function testFlush()
+    /**
+     * @test
+     */
+    public function canFlush()
     {
         $this->cache->set('foo', 'bar');
         $this->cache->flush();

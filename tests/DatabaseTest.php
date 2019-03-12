@@ -2,6 +2,7 @@
 
 use Flintstone\Config;
 use Flintstone\Database;
+use Flintstone\Line;
 
 class DatabaseTest extends \PHPUnit\Framework\TestCase
 {
@@ -27,48 +28,64 @@ class DatabaseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @test
      * @expectedException Flintstone\Exception
      * @expectedExceptionMessage Invalid characters in database name
      */
-    public function testDatabaseInvalidName()
+    public function databaseHasInvalidName()
     {
         $config = new Config();
-        $db = new Database('test!123', $config);
+        new Database('test!123', $config);
     }
 
-    public function testGetDatabaseAndConfig()
+    /**
+     * @test
+     */
+    public function canGetDatabaseAndConfig()
     {
         $this->assertEquals('test', $this->db->getName());
         $this->assertInstanceOf(Config::class, $this->db->getConfig());
         $this->assertEquals(__DIR__ . DIRECTORY_SEPARATOR . 'test.dat', $this->db->getPath());
     }
 
-    public function testAppendToFile()
+    /**
+     * @test
+     */
+    public function canAppendToFile()
     {
         $this->db->appendToFile('foo=bar');
         $this->assertEquals('foo=bar', file_get_contents($this->db->getPath()));
     }
 
-    public function testFlushFile()
+    /**
+     * @test
+     */
+    public function canFlushFile()
     {
         $this->db->appendToFile('foo=bar');
         $this->db->flushFile();
         $this->assertEmpty(file_get_contents($this->db->getPath()));
     }
 
-    public function testReadFromFile()
+    /**
+     * @test
+     */
+    public function canReadFromFile()
     {
         $this->db->appendToFile('foo=bar');
         $file = $this->db->readFromFile();
 
         foreach ($file as $line) {
-            $this->assertInstanceOf(\Flintstone\Line::class, $line);
+            $this->assertInstanceOf(Line::class, $line);
             $this->assertEquals('foo', $line->getKey());
             $this->assertEquals('bar', $line->getData());
         }
     }
 
-    public function testWriteTempToFile()
+    /**
+     * @test
+     */
+    public function canWriteTempToFile()
     {
         $tmpFile = new SplTempFileObject();
         $tmpFile->fwrite('foo=bar');

@@ -14,35 +14,23 @@ class Line
      */
     protected $pieces = [];
 
-    /**
-     * @param string $line
-     */
-    public function __construct($line)
+    public function __construct(string $line)
     {
         $this->line = $line;
         $this->pieces = explode('=', $line, 2);
     }
 
-    /**
-     * @return string
-     */
-    public function getLine()
+    public function getLine(): string
     {
         return $this->line;
     }
 
-    /**
-     * @return string
-     */
-    public function getKey()
+    public function getKey(): string
     {
         return $this->pieces[0];
     }
 
-    /**
-     * @return string
-     */
-    public function getData()
+    public function getData(): string
     {
         return $this->pieces[1];
     }

@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the Flintstone package.
- *
- * (c) Jason M <emailfire@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 namespace Flintstone;
 
 use SplFileObject;
@@ -77,7 +68,7 @@ class Database
      * @param string $name
      * @param Config|null $config
      */
-    public function __construct($name, Config $config = null)
+    public function __construct(string $name, Config $config = null)
     {
         $this->setName($name);
 
@@ -91,7 +82,7 @@ class Database
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -103,7 +94,7 @@ class Database
      *
      * @throws Exception
      */
-    public function setName($name)
+    public function setName(string $name)
     {
         Validation::validateDatabaseName($name);
         $this->name = $name;
@@ -114,7 +105,7 @@ class Database
      *
      * @return Config
      */
-    public function getConfig()
+    public function getConfig(): Config
     {
         return $this->config;
     }
@@ -134,7 +125,7 @@ class Database
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->config->getDir() . $this->getName() . $this->config->getExt();
     }
@@ -148,7 +139,7 @@ class Database
      *
      * @return SplFileObject
      */
-    protected function openFile($mode)
+    protected function openFile(int $mode): SplFileObject
     {
         $path = $this->getPath();
 
@@ -167,11 +158,12 @@ class Database
         $res = $this->fileAccessMode[$mode];
         $file = new SplFileObject($path, $res['mode']);
 
-        if (self::FILE_READ == $mode) {
+        if ($mode === self::FILE_READ) {
             $file->setFlags(SplFileObject::DROP_NEW_LINE | SplFileObject::SKIP_EMPTY | SplFileObject::READ_AHEAD);
         }
 
         if (!$this->getConfig()->useGzip() && !$file->flock($res['operation'])) {
+            $file = null;
             throw new Exception('Could not lock file: ' . $path);
         }
 
@@ -183,7 +175,7 @@ class Database
      *
      * @return SplTempFileObject
      */
-    public function openTempFile()
+    public function openTempFile(): SplTempFileObject
     {
         return new SplTempFileObject($this->getConfig()->getSwapMemoryLimit());
     }
@@ -210,7 +202,7 @@ class Database
      *
      * @return \Generator
      */
-    public function readFromFile()
+    public function readFromFile(): \Generator
     {
         $file = $this->openFile(static::FILE_READ);
 
@@ -228,7 +220,7 @@ class Database
      *
      * @param string $line
      */
-    public function appendToFile($line)
+    public function appendToFile(string $line)
     {
         $file = $this->openFile(static::FILE_APPEND);
         $file->fwrite($line);

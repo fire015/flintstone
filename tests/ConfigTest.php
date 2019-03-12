@@ -1,22 +1,30 @@
 <?php
 
+use Flintstone\Cache\ArrayCache;
 use Flintstone\Config;
 use Flintstone\Formatter\JsonFormatter;
+use Flintstone\Formatter\SerializeFormatter;
 
 class ConfigTest extends \PHPUnit\Framework\TestCase
 {
-    public function testDefaultConfig()
+    /**
+     * @test
+     */
+    public function defaultConfigIsSet()
     {
         $config = new Config();
         $this->assertEquals(getcwd().DIRECTORY_SEPARATOR, $config->getDir());
         $this->assertEquals('.dat', $config->getExt());
         $this->assertFalse($config->useGzip());
-        $this->assertInstanceOf(\Flintstone\Cache\ArrayCache::class, $config->getCache());
-        $this->assertInstanceOf(\Flintstone\Formatter\SerializeFormatter::class, $config->getFormatter());
+        $this->assertInstanceOf(ArrayCache::class, $config->getCache());
+        $this->assertInstanceOf(SerializeFormatter::class, $config->getFormatter());
         $this->assertEquals(2097152, $config->getSwapMemoryLimit());
     }
 
-    public function testConfigConstructorOptions()
+    /**
+     * @test
+     */
+    public function constructorConfigOverride()
     {
         $config = new Config([
             'dir' => __DIR__,
@@ -31,11 +39,14 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('.test.gz', $config->getExt());
         $this->assertTrue($config->useGzip());
         $this->assertFalse($config->getCache());
-        $this->assertInstanceOf(\Flintstone\Formatter\SerializeFormatter::class, $config->getFormatter());
+        $this->assertInstanceOf(SerializeFormatter::class, $config->getFormatter());
         $this->assertEquals(100, $config->getSwapMemoryLimit());
     }
 
-    public function testConfigSetFormatter()
+    /**
+     * @test
+     */
+    public function setValidFormatter()
     {
         $config = new Config();
         $config->setFormatter(new JsonFormatter());
@@ -43,27 +54,30 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @test
      * @expectedException Flintstone\Exception
      */
-    public function testConfigInvalidDir()
-    {
-        $config = new Config();
-        $config->setDir('/x/y/z/foo');
-    }
-
-    /**
-     * @expectedException Flintstone\Exception
-     */
-    public function testConfigInvalidFormatter()
+    public function setInvalidFormatter()
     {
         $config = new Config();
         $config->setFormatter(new self());
     }
 
     /**
+     * @test
      * @expectedException Flintstone\Exception
      */
-    public function testConfigInvalidCache()
+    public function invalidDirSet()
+    {
+        $config = new Config();
+        $config->setDir('/x/y/z/foo');
+    }
+
+    /**
+     * @test
+     * @expectedException Flintstone\Exception
+     */
+    public function invalidCacheSet()
     {
         $config = new Config();
         $config->setCache(new self());

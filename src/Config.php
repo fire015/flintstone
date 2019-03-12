@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the Flintstone package.
- *
- * (c) Jason M <emailfire@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 namespace Flintstone;
 
 use Flintstone\Cache\ArrayCache;
@@ -48,7 +39,7 @@ class Config
      *
      * @return array
      */
-    protected function normalizeConfig(array $config)
+    protected function normalizeConfig(array $config): array
     {
         $defaultConfig = [
             'dir' => getcwd(),
@@ -56,7 +47,7 @@ class Config
             'gzip' => false,
             'cache' => true,
             'formatter' => null,
-            'swap_memory_limit' => 2097152,    // 2MB
+            'swap_memory_limit' => 2097152, // 2MB
         ];
 
         return array_replace($defaultConfig, $config);
@@ -67,7 +58,7 @@ class Config
      *
      * @return string
      */
-    public function getDir()
+    public function getDir(): string
     {
         return $this->config['dir'];
     }
@@ -79,7 +70,7 @@ class Config
      *
      * @throws Exception
      */
-    public function setDir($dir)
+    public function setDir(string $dir)
     {
         if (!is_dir($dir)) {
             throw new Exception('Directory does not exist: ' . $dir);
@@ -93,7 +84,7 @@ class Config
      *
      * @return string
      */
-    public function getExt()
+    public function getExt(): string
     {
         if ($this->useGzip()) {
             return $this->config['ext'] . '.gz';
@@ -107,9 +98,9 @@ class Config
      *
      * @param string $ext
      */
-    public function setExt($ext)
+    public function setExt(string $ext)
     {
-        if ('.' != substr($ext, 0, 1)) {
+        if (substr($ext, 0, 1) !== '.') {
             $ext = '.' . $ext;
         }
 
@@ -121,7 +112,7 @@ class Config
      *
      * @return bool
      */
-    public function useGzip()
+    public function useGzip(): bool
     {
         return $this->config['gzip'];
     }
@@ -131,9 +122,9 @@ class Config
      *
      * @param bool $gzip
      */
-    public function setGzip($gzip)
+    public function setGzip(bool $gzip)
     {
-        $this->config['gzip'] = (bool)$gzip;
+        $this->config['gzip'] = $gzip;
     }
 
     /**
@@ -171,7 +162,7 @@ class Config
      *
      * @return FormatterInterface
      */
-    public function getFormatter()
+    public function getFormatter(): FormatterInterface
     {
         return $this->config['formatter'];
     }
@@ -201,7 +192,7 @@ class Config
      *
      * @return int
      */
-    public function getSwapMemoryLimit()
+    public function getSwapMemoryLimit(): int
     {
         return $this->config['swap_memory_limit'];
     }
@@ -211,8 +202,8 @@ class Config
      *
      * @param int $limit
      */
-    public function setSwapMemoryLimit($limit)
+    public function setSwapMemoryLimit(int $limit)
     {
-        $this->config['swap_memory_limit'] = (int)$limit;
+        $this->config['swap_memory_limit'] = $limit;
     }
 }
