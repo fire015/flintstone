@@ -14,8 +14,6 @@ Features include:
 * Gzip compression
 * Easy to use
 
-For full documentation please visit http://www.xeweb.net/flintstone/
-
 ### Installation
 
 The easiest way to install Flintstone is via [composer](http://getcomposer.org/). Run the following command to install it.
@@ -105,7 +103,3 @@ $users = new Flintstone('users', [
 To speed up data retrieval Flintstone can store the results of `get()` in a cache store. By default this uses a simple array that only persist's for as long as the `Flintstone` object exists.
 
 If you want to use your own cache store (such as Memcached) you can pass a class as the `cache` option. Just make sure it implements `Flintstone\Cache\CacheInterface`.
-
-### Who is using Flintstone?
-
-- [Key-Value Store](https://github.com/adammbalogh/key-value-store)
