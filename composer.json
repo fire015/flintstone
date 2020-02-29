@@ -3,7 +3,7 @@
     "type": "library",
     "description": "A key/value database store using flat files for PHP",
     "keywords": ["flintstone", "database", "cache", "files", "memory"],
-    "homepage": "http://www.xeweb.net/flintstone/",
+    "homepage": "https://github.com/fire015/flintstone",
     "license": "MIT",
     "authors": [
         {
