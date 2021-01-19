@@ -9,7 +9,7 @@ class LineTest extends \PHPUnit\Framework\TestCase
      */
     private $line;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->line = new Line('foo=bar');
     }

@@ -33,7 +33,7 @@ $users = new Flintstone('users', ['dir' => '/path/to/database/dir/']);
 
 ### Requirements
 
-- PHP 7.0+
+- PHP 7.3+
 
 ### Data types
 

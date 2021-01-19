@@ -9,7 +9,7 @@ class Flintstone
      *
      * @var string
      */
-    const VERSION = '2.2';
+    const VERSION = '2.3';
 
     /**
      * Database class.

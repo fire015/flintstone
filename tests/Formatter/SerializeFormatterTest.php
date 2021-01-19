@@ -9,7 +9,7 @@ class SerializeFormatterTest extends \PHPUnit\Framework\TestCase
      */
     private $formatter;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->formatter = new SerializeFormatter();
     }

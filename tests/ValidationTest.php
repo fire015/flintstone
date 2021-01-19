@@ -6,21 +6,19 @@ class ValidationTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @test
-     * @expectedException Flintstone\Exception
-     * @expectedExceptionMessage Invalid characters in key
      */
     public function validateKey()
     {
+        $this->expectException(\Flintstone\Exception::class);
         Validation::validateKey('test!123');
     }
 
     /**
      * @test
-     * @expectedException Flintstone\Exception
-     * @expectedExceptionMessage Invalid characters in database name
      */
     public function validateDatabaseName()
     {
+        $this->expectException(\Flintstone\Exception::class);
         Validation::validateDatabaseName('test!123');
     }
 }
