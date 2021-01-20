@@ -20,11 +20,10 @@ class FlintstoneTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \Flintstone\Exception
-     * @expectedExceptionMessage Invalid characters in key
      */
     public function keyHasInvalidName()
     {
+        $this->expectException(\Flintstone\Exception::class);
         $db = new Flintstone('test', []);
         $db->get('test!123');
     }

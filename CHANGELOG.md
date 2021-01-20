@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+### 19/01/2021 - 2.3
+* Bump minimum PHP version to 7.3
+* Update PHPUnit to version 9 (ensure Flintstone is compatible with PHP 8)
+
 ### 12/03/2019 - 2.2
 * Bump minimum PHP version to 7.0
 * Update PHPUnit to version 6

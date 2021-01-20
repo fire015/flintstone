@@ -2,7 +2,7 @@ Flintstone
 ==========
 
 [![Total Downloads](https://img.shields.io/packagist/dm/fire015/flintstone.svg)](https://packagist.org/packages/fire015/flintstone)
-[![Build Status](https://travis-ci.org/fire015/flintstone.svg?branch=master)](https://travis-ci.org/fire015/flintstone)
+[![Build Status](https://travis-ci.com/fire015/flintstone.svg?branch=master)](https://travis-ci.com/github/fire015/flintstone)
 
 A key/value database store using flat files for PHP.
 
@@ -33,7 +33,7 @@ $users = new Flintstone('users', ['dir' => '/path/to/database/dir/']);
 
 ### Requirements
 
-- PHP 7.0+
+- PHP 7.3+
 
 ### Data types
 

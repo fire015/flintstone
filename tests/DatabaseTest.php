@@ -11,7 +11,7 @@ class DatabaseTest extends \PHPUnit\Framework\TestCase
      */
     private $db;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $config = new Config([
             'dir' => __DIR__,
@@ -20,7 +20,7 @@ class DatabaseTest extends \PHPUnit\Framework\TestCase
         $this->db = new Database('test', $config);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         if (is_file($this->db->getPath())) {
             unlink($this->db->getPath());
@@ -29,11 +29,10 @@ class DatabaseTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException Flintstone\Exception
-     * @expectedExceptionMessage Invalid characters in database name
      */
     public function databaseHasInvalidName()
     {
+        $this->expectException(\Flintstone\Exception::class);
         $config = new Config();
         new Database('test!123', $config);
     }

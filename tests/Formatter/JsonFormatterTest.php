@@ -9,7 +9,7 @@ class JsonFormatterTest extends \PHPUnit\Framework\TestCase
      */
     private $formatter;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->formatter = new JsonFormatter();
     }
@@ -45,19 +45,19 @@ class JsonFormatterTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \Flintstone\Exception
      */
     public function encodingInvalidDataThrowsException()
     {
+        $this->expectException(\Flintstone\Exception::class);
         $this->formatter->encode(chr(241));
     }
 
     /**
      * @test
-     * @expectedException \Flintstone\Exception
      */
     public function decodingInvalidDataThrowsException()
     {
+        $this->expectException(\Flintstone\Exception::class);
         $this->formatter->decode('{');
     }
 

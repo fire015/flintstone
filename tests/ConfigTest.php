@@ -55,30 +55,30 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException Flintstone\Exception
      */
     public function setInvalidFormatter()
     {
+        $this->expectException(\Flintstone\Exception::class);
         $config = new Config();
         $config->setFormatter(new self());
     }
 
     /**
      * @test
-     * @expectedException Flintstone\Exception
      */
     public function invalidDirSet()
     {
+        $this->expectException(\Flintstone\Exception::class);
         $config = new Config();
         $config->setDir('/x/y/z/foo');
     }
 
     /**
      * @test
-     * @expectedException Flintstone\Exception
      */
     public function invalidCacheSet()
     {
+        $this->expectException(\Flintstone\Exception::class);
         $config = new Config();
         $config->setCache(new self());
     }
