@@ -90,10 +90,10 @@ class Flintstone
      * Get a key from the database.
      *
      * @param string $key
-     *
+     * @param mixed $default
      * @return mixed
      */
-    public function get(string $key)
+    public function get(string $key, $default = false)
     {
         Validation::validateKey($key);
 
@@ -110,7 +110,7 @@ class Flintstone
 
         foreach ($file as $line) {
             /** @var Line $line */
-            if ($line->getKey() == $key) {
+            if ($line->getKey() === $key) {
                 $data = $this->decodeData($line->getData());
                 break;
             }
@@ -120,6 +120,11 @@ class Flintstone
         if ($cache && $data !== false) {
             $cache->set($key, $data);
         }
+
+        // Possibly return a default value for a missing key
+        if ($data === false && $default !== false) {
+        	return $default;
+		}
 
         return $data;
     }

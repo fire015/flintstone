@@ -72,6 +72,12 @@ class FlintstoneTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('john', $db->get('name'));
         $this->assertEquals($arr, $db->get('arr'));
 
+        // Default value tests
+		$this->assertEquals('default value', $db->get('missing', 'default value'));
+		$this->assertEquals($arr, $db->get('missing', $arr));
+		$this->assertNull($db->get('missing', null));
+		$this->assertFalse($db->get('missing', false));
+
         $db->delete('name');
         $this->assertFalse($db->get('name'));
         $this->assertEquals($arr, $db->get('arr'));
