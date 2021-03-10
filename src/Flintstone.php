@@ -121,9 +121,9 @@ class Flintstone
             $cache->set($key, $data);
         }
 
-        // Possibly return a default value for a missing key
-        if ($data === false && $default !== false) {
-        	return $default;
+		// Possibly return a default value for a missing key
+		if ($data === false && $default !== false) {
+			return $default;
 		}
 
         return $data;
