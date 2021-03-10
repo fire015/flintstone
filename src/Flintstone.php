@@ -122,9 +122,9 @@ class Flintstone
         }
 
         // Possibly return a default value for a missing key
-		if ($data === false && $default !== false) {
-			return $default;
-		}
+	if ($data === false && $default !== false) {
+	    return $default;
+	}
 
         return $data;
     }
